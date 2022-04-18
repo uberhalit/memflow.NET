@@ -2,7 +2,7 @@
 A C# (.NET 6) wrapper for the [memflow-ffi](https://github.com/memflow/memflow/tree/main/memflow-ffi) crate >= 0.2.0.
 
 ## Installation
-Compile the `libmemflow_ffi.so` (see [Compiling the interopt library](#Compiling-the-interopt-library)) for your distro and copy into the [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/-/tree/master/memflow.NET/memflow.NET) folder. Then copy the entire [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/-/tree/master/memflow.NET/memflow.NET) folder with its 2 class files and the freshly built library to your project root. 
+Compile the `libmemflow_ffi.so` (see [Compiling the interopt library](#Compiling-the-interopt-library)) for your distro and copy into the [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/tree/main/memflow.NET/memflow.NET) folder. Then copy the entire [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/tree/main/memflow.NET/memflow.NET) folder with its 2 class files and the freshly built library to your project root. 
 
 ## Usage
 Import the `memflowNET` class like you'd import an ordinary class. The package contains abstract methods for the most used functionality of memflow. The `memflow.Interop` namespace further exposes all raw memflow structs and methods through `Methods`.
@@ -10,7 +10,7 @@ Import the `memflowNET` class like you'd import an ordinary class. The package c
 using memflowNET;
 using memflowNET.Interop;
 ```
-See [Example.cs](https://github.com/uberhalit/memflow.NET/-/blob/master/memflow.NET/Example.cs) for an short demo or [memflowNET.cs](https://github.com/uberhalit/memflow.NET/-/blob/master/memflow.NET/memflow.NET/memflowNET.cs) for the raw interop.
+See [Example.cs](https://github.com/uberhalit/memflow.NET/blob/main/memflow.NET/Example.cs) for an short demo or [memflowNET.cs](https://github.com/uberhalit/memflow.NET/blob/main/memflow.NET/memflow.NET/memflowNET.cs) for the raw interop.
 
 ## Compiling the interopt library
 Build the [memflow-ffi](https://github.com/memflow/memflow/tree/main/memflow-ffi) library:
@@ -45,7 +45,7 @@ Get the latest [ffi header file](https://github.com/memflow/memflow/blob/main/me
 ```
 .\ClangSharpPInvokeGenerator.exe -f memflow.h -n memflowNET.Interop -o memflowInterop.cs -l libmemflow_ffi -c preview-codegen unix-types generate-aggressive-inlining generate-macro-bindings
 ```
-This file isn't read to run yet, replace the old [memflowInterop.cs](https://github.com/uberhalit/memflow.NET/-/blob/master/memflow.NET/memflow.NET/memflowInterop.cs) of this repo with the new one and run the included [CodeGenFix](https://github.com/uberhalit/memflow.NET/-/blob/master/CodeGenFix/Program.cs) tool. It will automatically fix all CodeGen issues and copy over comments.
+This file isn't read to run yet, replace the old [memflowInterop.cs](https://github.com/uberhalit/memflow.NET/blob/main/memflow.NET/memflow.NET/memflowInterop.cs) of this repo with the new one and run the included [CodeGenFix](https://github.com/uberhalit/memflow.NET/blob/main/CodeGenFix/Program.cs) tool. It will automatically fix all CodeGen issues and copy over comments.
 
 If there are any remaining errors you can try to fix them manually or adjust the CodeGenFix utility:
 * Copy over the definitions of `NativeTypeNameAttribute` and `NativeInheritanceAttribute` of this repo
@@ -102,7 +102,7 @@ cargo update
 The helper class `memflowNET.cs` has been optimized to be close to native Rust performance. On an AMD 5900X through the kvm connector one can expect single-core performance between 12,000,000 and 15,000,000 `int` per second reading and similar in writing. This however depends heavily on the distro, VM setup and general hardware performance.
 
 ## Debugging
-For debugging with VS Code you need to either follow the guide in [launch.json](https://github.com/uberhalit/memflow.NET/-/blob/master/.vscode/launch.json) to setup a local SSH and use `Debug SSH (root-less)` debug configuration or run VS Code as root directly and use `Debug (root only)` configuration (not recommended): 
+For debugging with VS Code you need to either follow the guide in [launch.json](https://github.com/uberhalit/memflow.NET/blob/main/.vscode/launch.json) to setup a local SSH and use `Debug SSH (root-less)` debug configuration or run VS Code as root directly and use `Debug (root only)` configuration (not recommended): 
 ```
 code --user-data-dir="/home/$(whoami)/.vscode-root" --no-sandbox
 ```
