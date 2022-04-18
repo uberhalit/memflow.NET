@@ -1,0 +1,77 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "run Debug",
+            "type": "shell",
+            "command": "sudo",
+            "args": [
+                "./memflow.NET"
+            ],
+            "presentation": {
+                "clear": true
+            },
+            "dependsOn": ["build"],
+            "options": {
+                "cwd": "${workspaceFolder}/memflow.NET/bin/Debug/net6.0",
+                "statusbar": {
+                    "hide" : true
+                }
+            }
+        },
+        {
+            "label": "run Release",
+            "type": "shell",
+            "command": "sudo",
+            "args": [
+                "./memflow.NET"
+            ],
+            "presentation": {
+                "clear": true
+            },
+            "dependsOn": ["build Release"],
+            "options": {
+                "cwd": "${workspaceFolder}/memflow.NET/bin/Release/net6.0",
+                "statusbar": {
+                  "label" : "$(run) Run Release"
+                }
+            }
+        },
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/memflow.NET/memflow.NET.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile",
+            "options": {
+                "statusbar": {
+                  "hide" : true
+                }
+            }
+        },
+        {
+            "label": "build Release",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/memflow.NET/memflow.NET.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary",
+                "-c",
+                "Release"
+            ],
+            "problemMatcher": "$msCompile",
+            "options": {
+                "statusbar": {
+                    "label" : "$(server-environment) Build Release"
+                }
+            }
+        }
+    ]
+}

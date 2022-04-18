@@ -1,0 +1,55 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            /**
+                To get around needed root privs for debugging we ssh into the local machine as root
+                1. Create a new password-less ed25519 ssh key pair through ssh-keygen or use an existing one in /home/__USER__/.ssh/
+                2. Copy the contents of your public key (id_ed25519.pub) into the authorized_keys file (or create it if not already present).
+                3. ~# sudo apt install openssh-server
+                4. ~# sudo gedit /etc/ssh/sshd_config
+                    Port 2997
+                    ListenAddress 127.0.0.1
+                    PermitRootLogin yes
+                    StrictModes no
+                    PubkeyAuthentication yes
+                    AuthorizedKeysFile	/home/__USER__/.ssh/authorized_keys
+                    PasswordAuthentication no
+                5. ~# sudo chmod 700 ~/.ssh/
+                6. ~# sudo systemctl restart sshd.service
+                7. ~# sudo service ssh restart
+                8. Find debugger path for this launch.json and update it if there was an update to ms-dotnettools.csharp
+                    ~# find ~ | grep vsdbg
+            **/
+            "name": "Debug SSH (root-less)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/memflow.NET/bin/Debug/net6.0/memflow.NET.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "pipeTransport": {
+                "pipeProgram": "ssh",
+                "pipeArgs": ["root@127.0.0.1", "-p2997", "-i ~/.ssh/id_ed25519"],
+                "debuggerPath": "sudo ~/.vscode/extensions/ms-dotnettools.csharp-1.24.3-linux-x64/.debugger/vsdbg",
+                "pipeCwd": "${workspaceRoot}",
+                "quoteArgs": false
+            }
+        },
+        {
+            // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
+            "name": "Debug (root only)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/memflow.NET/bin/Debug/net6.0/memflow.NET.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "stopAtEntry": false
+        }
+    ]
+}

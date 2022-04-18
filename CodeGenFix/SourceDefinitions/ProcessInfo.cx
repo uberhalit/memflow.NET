@@ -1,0 +1,35 @@
+    [StructLayout(LayoutKind.Explicit, Size = 56)]
+    public unsafe partial struct ProcessInfo
+    {
+        [FieldOffset(0)]
+        [NativeTypeName("Address")]
+        public ulong address;
+
+        [FieldOffset(8)]
+        [NativeTypeName("Pid")]
+        public uint pid;
+
+        [FieldOffset(12)]
+        [NativeTypeName("struct ProcessState")]
+        public ProcessState state;
+
+        [FieldOffset(24)]
+        [NativeTypeName("ReprCString")]
+        public sbyte* name;
+
+        [FieldOffset(32)]
+        [NativeTypeName("ReprCString")]
+        public sbyte* path;
+
+        [FieldOffset(40)]
+        [NativeTypeName("ReprCString")]
+        public sbyte* command_line;
+
+        [FieldOffset(48)]
+        [NativeTypeName("struct ArchitectureIdent")]
+        public ArchitectureIdent sys_arch;
+
+        [FieldOffset(52)]
+        [NativeTypeName("struct ArchitectureIdent")]
+        public ArchitectureIdent proc_arch;
+    }

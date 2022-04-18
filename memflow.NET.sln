@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32002.185
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGenFix", "CodeGenFix\CodeGenFix.csproj", "{55BD33BD-8FB7-49CD-A95A-DE6E2CDC6430}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "memflow.NET", "memflow.NET\memflow.NET.csproj", "{C52C5354-4905-4763-A965-CF25437C4BC4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{55BD33BD-8FB7-49CD-A95A-DE6E2CDC6430}.Debug|x64.ActiveCfg = Debug|x64
+		{55BD33BD-8FB7-49CD-A95A-DE6E2CDC6430}.Debug|x64.Build.0 = Debug|x64
+		{55BD33BD-8FB7-49CD-A95A-DE6E2CDC6430}.Release|x64.ActiveCfg = Release|x64
+		{55BD33BD-8FB7-49CD-A95A-DE6E2CDC6430}.Release|x64.Build.0 = Release|x64
+		{C52C5354-4905-4763-A965-CF25437C4BC4}.Debug|x64.ActiveCfg = Debug|x64
+		{C52C5354-4905-4763-A965-CF25437C4BC4}.Release|x64.ActiveCfg = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4A86285A-0787-4AA3-B93F-6B77EB81B403}
+	EndGlobalSection
+EndGlobal
