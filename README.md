@@ -10,7 +10,7 @@ Import the `memflowNET` class like you'd import an ordinary class. The package c
 using memflowNET;
 using memflowNET.Interop;
 ```
-See [Example.cs](https://github.com/uberhalit/memflow.NET/blob/main/memflow.NET/Example.cs) for an short demo or [memflowNET.cs](https://github.com/uberhalit/memflow.NET/blob/main/memflow.NET/memflow.NET/memflowNET.cs) for the raw interop.
+See [Example.cs](https://github.com/uberhalit/memflow.NET/blob/main/memflow.NET/Example.cs) for a short demo or [memflowNET.cs](https://github.com/uberhalit/memflow.NET/blob/main/memflow.NET/memflow.NET/memflowNET.cs) for the raw interop.
 
 ## Compiling the interopt library
 Build the [memflow-ffi](https://github.com/memflow/memflow/tree/main/memflow-ffi) library:
@@ -20,7 +20,7 @@ cd memflow
 cargo build --release --all-features --workspace
 ```
 
-Navigate to `/memflow/target/release/` and copy the freshly built `libmemflow_ffi.so (Linux)` or `memflow_ffi (Windows)` to `memflow.NET/`. This is the library used to interact with memflow. On windows you have to rename the library to `libmemflow_ffi.dll`.
+Navigate to `/memflow/target/release/` and copy the freshly built `libmemflow_ffi.so (Linux)` or `memflow_ffi.dll (Windows)` to `memflow.NET/`. This is the library used to interact with memflow. On windows you have to rename the library to `libmemflow_ffi.dll`.
 
 ## Installing Connectors
 Use the latest [memflowup](https://github.com/memflow/memflowup) utility to install your connector. 
