@@ -2,7 +2,7 @@
 A C# (.NET 6) wrapper for the [memflow-ffi](https://github.com/memflow/memflow/tree/main/memflow-ffi) crate >= 0.2.0.
 
 ## Installation
-Compile the `libmemflow_ffi.so` (see [Compiling the interopt library](#Compiling-the-interopt-library)) for your distro and copy into the [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/tree/main/memflow.NET/memflow.NET) folder. Then copy the entire [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/tree/main/memflow.NET/memflow.NET) folder with its 2 class files and the freshly built library to your project root. 
+Compile the `libmemflow_ffi` library (see [Compiling the interopt library](#Compiling-the-interopt-library)) for your distro/OS and copy into the [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/tree/main/memflow.NET/memflow.NET) folder. Then copy the entire [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/tree/main/memflow.NET/memflow.NET) folder with its 2 class files and the freshly built library to your project root. 
 
 ## Usage
 Import the `memflowNET` class like you'd import an ordinary class. The package contains abstract methods for the most used functionality of memflow. The `memflow.Interop` namespace further exposes all raw memflow structs and methods through `Methods`.
@@ -20,15 +20,25 @@ cd memflow
 cargo build --release --all-features --workspace
 ```
 
-Copy the freshly built `/memflow/target/release/libmemflow_ffi.so` to `memflow.NET/`. This is the library used to interact with memflow.
+Navigate to `/memflow/target/release/` and copy the freshly built `libmemflow_ffi.so (Linux)` or `memflow_ffi (Windows)` to `memflow.NET/`. This is the library used to interact with memflow. On windows you have to rename the library to `libmemflow_ffi.dll`.
 
 ## Installing Connectors
-Use the latest [memflowup](https://github.com/memflow/memflowup) utility to install your connector, `kvm` is recommended.
+Use the latest [memflowup](https://github.com/memflow/memflowup) utility to install your connector. 
+
+Linux: 
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.memflow.io | sh
-memflowup install memflow-win32 memflow-kvm --system --dev --from-source
+memflowup install memflow-win32 memflow-kvm memflow-qemu --system --dev --from-source
 modprobe memflow
 echo memflow >> /etc/modules-load.d/modules.conf
+```
+Windows: 
+```
+git clone https://github.com/memflow/memflowup.git
+cd memflowup
+cargo build --release --all-features
+cd \target\release\
+.\memflowup.exe install memflow-win32 memflow-pcileech --system --dev --from-source
 ```
 
 ## Creating Bindings (Windows)
@@ -79,6 +89,16 @@ Afterwards as non-root execute:
 mkdir -p ~/.local/lib/memflow
 cp memflow-kvm/target/release/libmemflow_kvm.so ~/.local/lib/memflow/libmemflow_kvm.so
 ```
+
+**pcileech**
+```
+git clone https://github.com/memflow/memflow-pcileech.git
+cd memflow-pcileech
+git submodule update --init
+cargo build --release --all-features
+```
+
+Copy `FTD3XX.dll` and `leechcore.dll` to `C:\Program Files\memflow\`.
 
 Build and install the [memflow-win32](https://github.com/memflow/memflow-win32) library:
 ```

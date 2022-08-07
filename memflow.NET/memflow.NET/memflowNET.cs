@@ -1,18 +1,19 @@
 using System.Text;
 using System.Diagnostics;
+using System.Security.Principal;
 using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
 using memflowNET.Interop;
 
 /// <summary>
-/// Version 1.0.0.0
+/// Version 1.1.0.0
 /// </summary>
 namespace memflowNET
 {
     /// <summary>
     /// A memflow connection to a VM.
     /// </summary>
-    public unsafe class MFconnection: IDisposable
+    public unsafe class MFconnection : IDisposable
     {
         /// <summary>
         /// Determining whether this instance initialized successfully.
@@ -45,21 +46,33 @@ namespace memflowNET
         internal readonly OsInstance_CBox_c_void_____CArc_c_void* _osPlugin;
 
         /// <summary>
+        /// Internal keyboard.
+        /// </summary>
+        private readonly CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void* _keyboard;
+
+        /// <summary>
+        /// If device is FPGA, in which case dropping inventory crashes memflow.
+        /// </summary>
+        private bool _IsFpga;
+
+        /// <summary>
         /// Connects to memflow using the provided connector.
         /// </summary>
-        /// <param name="connector">A memflow connector, currently supported are 'kvm' and 'qemu_procfs'.</param>
+        /// <param name="connector">A memflow connector, currently supported are 'kvm', 'qemu' and 'pcileech'.</param>
+        /// <param name="connector">Arguments for memflow connector.</param>
+        /// <param name="monitorKeyboard">If the keyboard inside the VM should be monitored for button presses.</param>
         /// <param name="loglevel">The logging level of memflow.</param>
         /// <param name="logging">The logging action that takes a single string as parameter.</param>
-        public unsafe MFconnection(string connector, int loglevel = 1, Action<string>? logging = null)
+        public unsafe MFconnection(string connector, string connectorArgs = "", bool monitorKeyboard = false, int loglevel = 1, Action<string>? logging = null)
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) 
-                throw new PlatformNotSupportedException("Only Linux systems are supported at this time.");
-            if (!Environment.Is64BitProcess || IntPtr.Size != 8) 
+            if (!Environment.Is64BitProcess || IntPtr.Size != 8)
                 throw new PlatformNotSupportedException("Only 64 bit systems are supported.");
 
-            // check for root privilege
-            if (ShellHelper.Bash($"id -u {Environment.UserName}") != "0") 
+            // check for root/admin privilege
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && ShellHelper.Bash($"id -u {Environment.UserName}") != "0")
                 throw new UnauthorizedAccessException("Must be started as root.");
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator) != true)
+                throw new UnauthorizedAccessException("Must be started as administrator.");
 
             // set logger
             if (logging != null)
@@ -68,23 +81,28 @@ namespace memflowNET
                 PrintLog = Logger;
 
             // enable debug level logging
-            Interop.Methods.log_init((Interop.LevelFilter)loglevel);
+            Methods.log_init((LevelFilter)loglevel);
             this._loglevel = loglevel;
 
             // load all available plugins
-            this._inventory = Interop.Methods.inventory_scan();
+            this._inventory = Methods.inventory_scan();
             if (loglevel > 2)
                 PrintLog($"### Inventory initialized: 0x{(IntPtr)this._inventory:X}");
 
             // alloc connector struct
-            this._connector = (ConnectorInstance_CBox_c_void_____CArc_c_void*) Marshal.AllocCoTaskMem(sizeof(ConnectorInstance_CBox_c_void_____CArc_c_void));
-            
+            this._connector = (ConnectorInstance_CBox_c_void_____CArc_c_void*)Marshal.AllocCoTaskMem(sizeof(ConnectorInstance_CBox_c_void_____CArc_c_void));
+
+            if (connector == "pcileech" && connectorArgs.ToUpper().Contains("FPGA"))
+                this._IsFpga = true;
+
             // initialize the connector
             sbyte[] bName = Array.ConvertAll(Encoding.ASCII.GetBytes(connector + "\0"), b => unchecked((sbyte)b));
-            sbyte[] bArgs = new sbyte[1] {0x0}; // empty C string
+            sbyte[] bArgs = new sbyte[1] { 0x0 }; // empty C string
+            if (connectorArgs.Length > 0)
+                bArgs = Array.ConvertAll(Encoding.ASCII.GetBytes(connectorArgs + "\0"), b => unchecked((sbyte)b));
             fixed (sbyte* cName = &bName[0], cArgs = &bArgs[0])
             {
-                if (Interop.Methods.inventory_create_connector(this._inventory, cName, cArgs, this._connector) != 0)
+                if (Methods.inventory_create_connector(this._inventory, cName, cArgs, this._connector) != 0)
                 {
                     PrintLog($"### Unable to initialize connector '{connector}'");
                     return;
@@ -94,18 +112,30 @@ namespace memflowNET
                 PrintLog($"### Connector initialized: 0x{(IntPtr)(*this._connector).container.instance.instance:X}");
 
             // alloc OS Plugin struct
-            this._osPlugin = (OsInstance_CBox_c_void_____CArc_c_void*) Marshal.AllocCoTaskMem(sizeof(OsInstance_CBox_c_void_____CArc_c_void));
-            
+            this._osPlugin = (OsInstance_CBox_c_void_____CArc_c_void*)Marshal.AllocCoTaskMem(sizeof(OsInstance_CBox_c_void_____CArc_c_void));
+
             // initialize the OS plugin
             bName = Array.ConvertAll(Encoding.ASCII.GetBytes("win32\0"), b => unchecked((sbyte)b));
             fixed (sbyte* osName = &bName[0], osArgs = &bArgs[0])
             {
-                if (Interop.Methods.inventory_create_os(this._inventory, osName, osArgs, this._connector, this._osPlugin) != 0) 
+                if (Methods.inventory_create_os(this._inventory, osName, osArgs, this._connector, this._osPlugin) != 0)
                 {
                     PrintLog("### Unable to initialize OS plugin 'win32'");
                     return;
                 }
             }
+
+            if (monitorKeyboard)
+            {
+                // alloc keyboard struct
+                this._keyboard = (CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)Marshal.AllocCoTaskMem(sizeof(CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void));
+                // initialize keyboard
+                Methods.mf_osinstance_keyboard(this._osPlugin, this._keyboard);
+            }
+            else
+                this._keyboard = null;
+
+
             if (loglevel > 2)
                 PrintLog($"### OS plugin initialized: 0x{(IntPtr)(*this._osPlugin).container.instance.instance:X}");
             this.Success = true;
@@ -119,7 +149,8 @@ namespace memflowNET
             if (this._osPlugin != null)
             {
                 // we don't need to drop connector as it was handed into osplugin
-                Interop.Methods.os_drop(this._osPlugin);
+                Methods.os_drop(this._osPlugin);
+                Marshal.FreeCoTaskMem((IntPtr)this._keyboard);
                 Marshal.FreeCoTaskMem((IntPtr)this._osPlugin);
                 Marshal.FreeCoTaskMem((IntPtr)this._connector);
                 if (this._loglevel > 2)
@@ -127,21 +158,35 @@ namespace memflowNET
             }
             else if (this._connector != null)
             {
-                Interop.Methods.connector_drop(this._connector);
+                Methods.connector_drop(this._connector);
                 Marshal.FreeCoTaskMem((IntPtr)this._connector);
                 if (this._loglevel > 2)
                     PrintLog("### Connector freed");
             }
-            Interop.Methods.inventory_free(this._inventory);
+            // dropping inventory on a FPGA device crashed memflow, so we skip it for now
+            if (!this._IsFpga)
+                Methods.inventory_free(this._inventory);
             if (this._loglevel > 2)
                 PrintLog("### Inventory freed");
+        }
+
+        /// <summary>
+        /// Checks if a virtual key is being pressed.
+        /// </summary>
+        /// <param name="vk">The virtual key code of the key: https://docs.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes</param>
+        /// <returns>True if the key is currently held down.</returns>
+        public bool IsKeyDown(int vk)
+        {
+            if (this._keyboard == null)
+                return false;
+            return Methods.mf_keyboard_is_down(this._keyboard, vk);
         }
 
         /// <summary>
         /// Logs a message to console/output.
         /// </summary>
         /// <param name="msg">The message to log.</param>
-        private static void Logger(string msg) 
+        private static void Logger(string msg)
         {
             Console.WriteLine(msg);
             Debug.WriteLine(msg);
@@ -179,7 +224,7 @@ namespace memflowNET
     /// <summary>
     /// A memflow process instance.
     /// </summary>
-    public unsafe class MFprocess: IDisposable
+    public unsafe class MFprocess : IDisposable
     {
         /// <summary>
         /// Determining whether this instance initialized successfully.
@@ -257,14 +302,14 @@ namespace memflowNET
             }
 
             // alloc process struct
-            this._process = (ProcessInstance_CBox_c_void_____CArc_c_void*) Marshal.AllocCoTaskMem(sizeof(ProcessInstance_CBox_c_void_____CArc_c_void));
+            this._process = (ProcessInstance_CBox_c_void_____CArc_c_void*)Marshal.AllocCoTaskMem(sizeof(ProcessInstance_CBox_c_void_____CArc_c_void));
 
             // define search
             string procName = processName;
             if (!procName.ToLower().EndsWith(".exe"))
                 procName += ".exe";
             byte[] bName = Encoding.ASCII.GetBytes(procName);
-            fixed (byte* cName = &bName[0]) 
+            fixed (byte* cName = &bName[0])
             {
                 CSliceRef_u8 processSearch = new()
                 {
@@ -272,7 +317,7 @@ namespace memflowNET
                     len = (uint)procName.Length
                 };
                 // find a specific process based on its name
-                if (Interop.Methods.mf_osinstance_process_by_name(connection._osPlugin, processSearch, this._process) != 0)
+                if (Methods.mf_osinstance_process_by_name(connection._osPlugin, processSearch, this._process) != 0)
                 {
                     // in some rare cases dropping a failed process struct through memflow will trigger a memory exception so we we have to manually dispose it here for now
                     Marshal.FreeCoTaskMem((IntPtr)this._process);
@@ -282,18 +327,18 @@ namespace memflowNET
                     return;
                 }
             }
-            
+
             // get process infos
-            ProcessInfo* info = Interop.Methods.mf_processinstance_info(this._process);
+            ProcessInfo* info = Methods.mf_processinstance_info(this._process);
             this.Address = (*info).address;
             this.PId = (*info).pid;
             this.Name = GetCStringFromPtr((*info).name);
             this.Path = GetCStringFromPtr((*info).path);
             this.Commandline = GetCStringFromPtr((*info).command_line);
-            
+
             // get main module
             ModuleInfo mainModule = new();
-            if (Interop.Methods.mf_processinstance_primary_module(this._process, &mainModule) != 0)
+            if (Methods.mf_processinstance_primary_module(this._process, &mainModule) != 0)
             {
                 if (this._loglevel > 0)
                     PrintLog("### Process main module could not be found!");
@@ -336,14 +381,14 @@ namespace memflowNET
         {
             ModuleInfo moduleInfo = new();
             byte[] bName = Encoding.ASCII.GetBytes(name);
-            fixed (byte* cName = &bName[0]) 
+            fixed (byte* cName = &bName[0])
             {
                 CSliceRef_u8 processSearch = new()
                 {
                     data = cName,
                     len = (uint)name.Length
                 };
-                if (Interop.Methods.mf_processinstance_module_by_name(this._process, processSearch, &moduleInfo) != 0)
+                if (Methods.mf_processinstance_module_by_name(this._process, processSearch, &moduleInfo) != 0)
                 {
                     if (this._loglevel > 0)
                         PrintLog($"### Module '{name}' could not be found!");
@@ -359,7 +404,7 @@ namespace memflowNET
         /// <returns>True if process hasn't exited yet.</returns>
         public bool IsRunning()
         {
-            ProcessState state = Interop.Methods.mf_processinstance_state(this._process);
+            ProcessState state = Methods.mf_processinstance_state(this._process);
             if (state.tag == ProcessState_Tag.ProcessState_Alive)
                 return true;
             return false;
@@ -379,7 +424,7 @@ namespace memflowNET
                 data = data,
                 len = (nuint)length
             };
-            if (Interop.Methods.mf_processinstance_read_raw_into(this._process, address, cBytes) != 0)
+            if (Methods.mf_processinstance_read_raw_into(this._process, address, cBytes) != 0)
             {
                 if (this._loglevel > 1)
                     PrintLog($"### Failed to read data from 0x{address:X}!");
@@ -402,7 +447,7 @@ namespace memflowNET
                 data = this._rwBuffer,
                 len = (nuint)length
             };
-            if (Interop.Methods.mf_processinstance_read_raw_into(this._process, address, cBytes) != 0)
+            if (Methods.mf_processinstance_read_raw_into(this._process, address, cBytes) != 0)
             {
                 if (this._loglevel > 1)
                     PrintLog($"### Failed to read data from 0x{address:X}!");
@@ -444,7 +489,7 @@ namespace memflowNET
                     data = ptr,
                     len = (nuint)length
                 };
-                if (Interop.Methods.mf_processinstance_read_raw_into(this._process, address, cBytes) != 0)
+                if (Methods.mf_processinstance_read_raw_into(this._process, address, cBytes) != 0)
                 {
                     if (this._loglevel > 1)
                         PrintLog($"### Failed to read data from 0x{address:X}!");
@@ -599,12 +644,12 @@ namespace memflowNET
             if (!ReadBytesCached(address, maxLength))
                 return "";
             byte* p = this._rwBuffer;
-            for (int i = 0; i < maxLength; i++, p++) 
+            for (int i = 0; i < maxLength; i++, p++)
             {
                 // find terminator
                 if (*(p) == (byte)0x00)
                     return Encoding.ASCII.GetString(this._rwBuffer, i);
-                    //return new string((sbyte*)this._rwBuffer); // DANGER! this will create a buffer-overflow if no null-terminator is present
+                //return new string((sbyte*)this._rwBuffer); // DANGER! this will create a buffer-overflow if no null-terminator is present
             }
             return Encoding.ASCII.GetString(this._rwBuffer, (int)maxLength);
         }
@@ -623,7 +668,7 @@ namespace memflowNET
                 data = data,
                 len = (nuint)length,
             };
-            if (Interop.Methods.mf_processinstance_write_raw(this._process, address, cBytes) != 0)
+            if (Methods.mf_processinstance_write_raw(this._process, address, cBytes) != 0)
             {
                 if (this._loglevel > 1)
                     PrintLog($"### Failed to write data to 0x{address:X}!");
@@ -646,7 +691,7 @@ namespace memflowNET
                 data = this._rwBuffer,
                 len = (nuint)length,
             };
-            if (Interop.Methods.mf_processinstance_write_raw(this._process, address, cBytes) != 0)
+            if (Methods.mf_processinstance_write_raw(this._process, address, cBytes) != 0)
             {
                 if (this._loglevel > 1)
                     PrintLog($"### Failed to write data to 0x{address:X}!");
@@ -677,14 +722,14 @@ namespace memflowNET
         /// <remarks>This is slower than the buffered WriteBytes(), only use this if neccessary.</remarks>
         public bool WriteBytesUncapped(ulong address, byte[] data)
         {
-            fixed (byte* ptr = &data[0]) 
+            fixed (byte* ptr = &data[0])
             {
                 CSliceRef_u8 cBytes = new()
                 {
                     data = ptr,
                     len = (nuint)data.Length,
                 };
-                if (Interop.Methods.mf_processinstance_write_raw(this._process, address, cBytes) != 0)
+                if (Methods.mf_processinstance_write_raw(this._process, address, cBytes) != 0)
                 {
                     if (this._loglevel > 1)
                         PrintLog($"### Failed to write data to 0x{address:X}!");
@@ -825,13 +870,13 @@ namespace memflowNET
         public bool WriteString(ulong address, string data, Encoding encoding)
         {
             byte[] str = encoding.GetBytes(data);
-            if (encoding.IsSingleByte) 
+            if (encoding.IsSingleByte)
             {
                 byte[] terminatedStr = new byte[str.Length + 1];   // string byte representation + 00 terminator
                 Unsafe.CopyBlockUnaligned(ref terminatedStr[0], ref str[0], (uint)str.Length);
                 return WriteBytes(address, terminatedStr);
             }
-            else 
+            else
                 return WriteBytes(address, str);
         }
 
@@ -861,14 +906,14 @@ namespace memflowNET
         /// </summary>
         public void Dispose()
         {
-            if (this._process != null) 
+            if (this._process != null)
             {
-                Interop.Methods.mf_processinstance_drop(*this._process);
+                Methods.mf_processinstance_drop(*this._process);
                 Marshal.FreeCoTaskMem((IntPtr)this._process);
                 if (this._loglevel > 2)
                     PrintLog("### Process freed");
             }
-            if (this.Success) 
+            if (this.Success)
                 NativeMemory.Free(this._rwBuffer);
         }
     }
