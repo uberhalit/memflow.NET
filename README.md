@@ -1,5 +1,5 @@
 # memflow.NET
-A C# (.NET 8) wrapper for the [memflow-ffi](https://github.com/memflow/memflow/tree/main/memflow-ffi) crate >= 0.2.0.
+A C# (.NET 8) wrapper for the [memflow-ffi](https://github.com/memflow/memflow/tree/main/memflow-ffi) crate >= 0.2.1.
 
 ## Installation
 Compile the `libmemflow_ffi` library (see [Compiling the interopt library](#Compiling-the-interopt-library)) for your distro/OS and copy into the [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/tree/main/memflow.NET/memflow.NET) folder. Then copy the entire [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/tree/main/memflow.NET/memflow.NET) folder with its 2 class files and the freshly built library to your project root. 

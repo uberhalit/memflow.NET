@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using memflowNET.Interop;
 
 /// <summary>
-/// Version 1.2.0.0 - memflow-ffi >= 0.2.1
+/// Version 1.2.1.0 - memflow-ffi > 0.2.1
 /// </summary>
 namespace memflowNET
 {
@@ -81,11 +81,11 @@ namespace memflowNET
                 PrintLog = Logger;
 
             // enable debug level logging
-            Methods.log_init((LevelFilter)loglevel);
+            Methods.mf_log_init((LevelFilter)loglevel);
             this._loglevel = loglevel;
 
             // load all available plugins
-            this._inventory = Methods.inventory_scan();
+            this._inventory = Methods.mf_inventory_scan();
             if (loglevel > 2)
                 PrintLog($"### Inventory initialized: 0x{(IntPtr)this._inventory:X}");
 
@@ -102,7 +102,7 @@ namespace memflowNET
                 bArgs = Array.ConvertAll(Encoding.ASCII.GetBytes(connectorArgs + "\0"), b => unchecked((sbyte)b));
             fixed (sbyte* cName = &bName[0], cArgs = &bArgs[0])
             {
-                if (Methods.inventory_create_connector(this._inventory, cName, cArgs, this._connector) != 0)
+                if (Methods.mf_inventory_create_connector(this._inventory, cName, cArgs, this._connector) != 0)
                 {
                     PrintLog($"### Unable to initialize connector '{connector}'");
                     return;
@@ -118,7 +118,7 @@ namespace memflowNET
             bName = Array.ConvertAll(Encoding.ASCII.GetBytes("win32\0"), b => unchecked((sbyte)b));
             fixed (sbyte* osName = &bName[0], osArgs = &bArgs[0])
             {
-                if (Methods.inventory_create_os(this._inventory, osName, osArgs, this._connector, this._osPlugin) != 0)
+                if (Methods.mf_inventory_create_os(this._inventory, osName, osArgs, this._connector, this._osPlugin) != 0)
                 {
                     PrintLog("### Unable to initialize OS plugin 'win32'");
                     return;
@@ -149,7 +149,7 @@ namespace memflowNET
             if (this._osPlugin != null)
             {
                 // we don't need to drop connector as it was handed into osplugin
-                Methods.os_drop(this._osPlugin);
+                Methods.mf_os_drop(this._osPlugin);
                 Marshal.FreeCoTaskMem((IntPtr)this._keyboard);
                 Marshal.FreeCoTaskMem((IntPtr)this._osPlugin);
                 Marshal.FreeCoTaskMem((IntPtr)this._connector);
@@ -158,14 +158,14 @@ namespace memflowNET
             }
             else if (this._connector != null)
             {
-                Methods.connector_drop(this._connector);
+                Methods.mf_connector_drop(this._connector);
                 Marshal.FreeCoTaskMem((IntPtr)this._connector);
                 if (this._loglevel > 2)
                     PrintLog("### Connector freed");
             }
             // dropping inventory on a FPGA device crashes memflow, so we skip it for now
             if (!this._IsFpga)
-                Methods.inventory_free(this._inventory);
+                Methods.mf_inventory_free(this._inventory);
             if (this._loglevel > 2)
                 PrintLog("### Inventory freed");
         }

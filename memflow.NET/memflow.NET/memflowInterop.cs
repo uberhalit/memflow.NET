@@ -2047,7 +2047,7 @@ namespace memflowNET.Interop
         /// Initialize logging with selected logging level.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void log_init(LevelFilter level_filter);
+        public static extern void mf_log_init(LevelFilter level_filter);
 
         /// <summary>
         /// Logs a error message via log::error!
@@ -2055,7 +2055,7 @@ namespace memflowNET.Interop
         /// The provided string must be a valid null-terminated char array.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void log_error([NativeTypeName("const char *")] sbyte* s);
+        public static extern void mf_log_error([NativeTypeName("const char *")] sbyte* s);
 
         /// <summary>
         /// Logs a warning message via log::warn!
@@ -2063,7 +2063,7 @@ namespace memflowNET.Interop
         /// The provided string must be a valid null-terminated char array.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void log_warn([NativeTypeName("const char *")] sbyte* s);
+        public static extern void mf_log_warn([NativeTypeName("const char *")] sbyte* s);
 
         /// <summary>
         /// Logs a info message via log::info!
@@ -2071,7 +2071,7 @@ namespace memflowNET.Interop
         /// The provided string must be a valid null-terminated char array.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void log_info([NativeTypeName("const char *")] sbyte* s);
+        public static extern void mf_log_info([NativeTypeName("const char *")] sbyte* s);
 
         /// <summary>
         /// Logs a debug message via log::debug!
@@ -2079,7 +2079,7 @@ namespace memflowNET.Interop
         /// The provided string must be a valid null-terminated char array.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void log_debug([NativeTypeName("const char *")] sbyte* s);
+        public static extern void mf_log_debug([NativeTypeName("const char *")] sbyte* s);
 
         /// <summary>
         /// Logs a trace message via log::trace!
@@ -2087,26 +2087,26 @@ namespace memflowNET.Interop
         /// The provided string must be a valid null-terminated char array.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void log_trace([NativeTypeName("const char *")] sbyte* s);
+        public static extern void mf_log_trace([NativeTypeName("const char *")] sbyte* s);
 
         /// <summary>
         /// Logs an error code with custom log level.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void log_errorcode(Level level, [NativeTypeName("int32_t")] int error);
+        public static extern void mf_log_errorcode(Level level, [NativeTypeName("int32_t")] int error);
 
         /// <summary>
         /// Logs an error with debug log level.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void log_debug_errorcode([NativeTypeName("int32_t")] int error);
+        public static extern void mf_log_debug_errorcode([NativeTypeName("int32_t")] int error);
 
         /// <summary>
         /// Sets new maximum log level.
         /// If `inventory` is supplied, the log level is also updated within all plugin instances. However,if it is not supplied, plugins will not have their log levels updated, potentially leading tolower performance, or less logging than expected.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void log_set_max_level(LevelFilter level_filter, [NativeTypeName("const struct Inventory *")] Inventory* inventory);
+        public static extern void mf_log_set_max_level(LevelFilter level_filter, [NativeTypeName("const struct Inventory *")] Inventory* inventory);
 
         /// <summary>
         /// Helper to convert `Address` to a `PhysicalAddress`
@@ -2114,7 +2114,7 @@ namespace memflowNET.Interop
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("struct PhysicalAddress")]
-        public static extern PhysicalAddress addr_to_paddr([NativeTypeName("Address")] ulong address);
+        public static extern PhysicalAddress mf_addr_to_paddr([NativeTypeName("Address")] ulong address);
 
         /// <summary>
         /// Create a new connector inventory
@@ -2125,7 +2125,7 @@ namespace memflowNET.Interop
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("struct Inventory *")]
-        public static extern Inventory* inventory_scan();
+        public static extern Inventory* mf_inventory_scan();
 
         /// <summary>
         /// Create a new inventory with custom path string
@@ -2134,7 +2134,7 @@ namespace memflowNET.Interop
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("struct Inventory *")]
-        public static extern Inventory* inventory_scan_path([NativeTypeName("const char *")] sbyte* path);
+        public static extern Inventory* mf_inventory_scan_path([NativeTypeName("const char *")] sbyte* path);
 
         /// <summary>
         /// Add a directory to an existing inventory
@@ -2143,7 +2143,7 @@ namespace memflowNET.Interop
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("int32_t")]
-        public static extern int inventory_add_dir([NativeTypeName("struct Inventory *")] Inventory* inv, [NativeTypeName("const char *")] sbyte* dir);
+        public static extern int mf_inventory_add_dir([NativeTypeName("struct Inventory *")] Inventory* inv, [NativeTypeName("const char *")] sbyte* dir);
 
         /// <summary>
         /// Create a connector with given arguments
@@ -2157,7 +2157,7 @@ namespace memflowNET.Interop
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("int32_t")]
-        public static extern int inventory_create_connector([NativeTypeName("struct Inventory *")] Inventory* inv, [NativeTypeName("const char *")] sbyte* name, [NativeTypeName("const char *")] sbyte* args, [NativeTypeName("MuConnectorInstanceArcBox *")] ConnectorInstance_CBox_c_void_____CArc_c_void* @out);
+        public static extern int mf_inventory_create_connector([NativeTypeName("struct Inventory *")] Inventory* inv, [NativeTypeName("const char *")] sbyte* name, [NativeTypeName("const char *")] sbyte* args, [NativeTypeName("MuConnectorInstanceArcBox *")] ConnectorInstance_CBox_c_void_____CArc_c_void* @out);
 
         /// <summary>
         /// Create a OS instance with given arguments
@@ -2173,7 +2173,7 @@ namespace memflowNET.Interop
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("int32_t")]
-        public static extern int inventory_create_os([NativeTypeName("struct Inventory *")] Inventory* inv, [NativeTypeName("const char *")] sbyte* name, [NativeTypeName("const char *")] sbyte* args, [NativeTypeName("ConnectorInstanceArcBox *")] ConnectorInstance_CBox_c_void_____CArc_c_void* mem, [NativeTypeName("MuOsInstanceArcBox *")] OsInstance_CBox_c_void_____CArc_c_void* @out);
+        public static extern int mf_inventory_create_os([NativeTypeName("struct Inventory *")] Inventory* inv, [NativeTypeName("const char *")] sbyte* name, [NativeTypeName("const char *")] sbyte* args, [NativeTypeName("ConnectorInstanceArcBox *")] ConnectorInstance_CBox_c_void_____CArc_c_void* mem, [NativeTypeName("MuOsInstanceArcBox *")] OsInstance_CBox_c_void_____CArc_c_void* @out);
 
         /// <summary>
         /// Free a os plugin
@@ -2181,7 +2181,7 @@ namespace memflowNET.Interop
         /// `os` must point to a valid `OsInstance` that was created using one of the providedfunctions.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void os_drop([NativeTypeName("OsInstanceArcBox *")] OsInstance_CBox_c_void_____CArc_c_void* os);
+        public static extern void mf_os_drop([NativeTypeName("OsInstanceArcBox *")] OsInstance_CBox_c_void_____CArc_c_void* os);
 
         /// <summary>
         /// Clone a connector
@@ -2190,7 +2190,7 @@ namespace memflowNET.Interop
         /// `conn` has to point to a a valid `CloneablePhysicalMemory` created by one of the providedfunctions.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void connector_clone([NativeTypeName("const ConnectorInstanceArcBox *")] ConnectorInstance_CBox_c_void_____CArc_c_void* conn, [NativeTypeName("MuConnectorInstanceArcBox *")] ConnectorInstance_CBox_c_void_____CArc_c_void* @out);
+        public static extern void mf_connector_clone([NativeTypeName("const ConnectorInstanceArcBox *")] ConnectorInstance_CBox_c_void_____CArc_c_void* conn, [NativeTypeName("MuConnectorInstanceArcBox *")] ConnectorInstance_CBox_c_void_____CArc_c_void* @out);
 
         /// <summary>
         /// Free a connector instance
@@ -2199,7 +2199,7 @@ namespace memflowNET.Interop
         /// There has to be no instance of `PhysicalMemory` created from the input `conn`, because theywill become invalid.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void connector_drop([NativeTypeName("ConnectorInstanceArcBox *")] ConnectorInstance_CBox_c_void_____CArc_c_void* conn);
+        public static extern void mf_connector_drop([NativeTypeName("ConnectorInstanceArcBox *")] ConnectorInstance_CBox_c_void_____CArc_c_void* conn);
 
         /// <summary>
         /// Free a connector inventory
@@ -2207,26 +2207,26 @@ namespace memflowNET.Interop
         /// `inv` must point to a valid `Inventory` that was created using one of the providedfunctions.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void inventory_free([NativeTypeName("struct Inventory *")] Inventory* inv);
+        public static extern void mf_inventory_free([NativeTypeName("struct Inventory *")] Inventory* inv);
 
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("uint8_t")]
-        public static extern byte arch_bits([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
+        public static extern byte mf_arch_bits([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
 
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern Endianess arch_endianess([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
-
-        [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: NativeTypeName("uintptr_t")]
-        public static extern nuint arch_page_size([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
+        public static extern Endianess mf_arch_endianess([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
 
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("uintptr_t")]
-        public static extern nuint arch_size_addr([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
+        public static extern nuint mf_arch_page_size([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
+
+        [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: NativeTypeName("uintptr_t")]
+        public static extern nuint mf_arch_size_addr([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
 
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("uint8_t")]
-        public static extern byte arch_address_space_bits([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
+        public static extern byte mf_arch_address_space_bits([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
 
         /// <summary>
         /// Free an architecture reference
@@ -2234,11 +2234,11 @@ namespace memflowNET.Interop
         /// `arch` must be a valid heap allocated reference created by one of the API's functions.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        public static extern void arch_free([NativeTypeName("struct ArchitectureObj *")] ArchitectureObj* arch);
+        public static extern void mf_arch_free([NativeTypeName("struct ArchitectureObj *")] ArchitectureObj* arch);
 
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: NativeTypeName("bool")]
-        public static extern byte is_x86_arch([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
+        public static extern byte mf_is_x86_arch([NativeTypeName("const struct ArchitectureObj *")] ArchitectureObj* arch);
 
         public static CArc_c_void ctx_arc_clone(CArc_c_void* self)
         {
