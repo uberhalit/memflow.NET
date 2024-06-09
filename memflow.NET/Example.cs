@@ -10,7 +10,7 @@ namespace memflowCS
             Console.WriteLine("Testing memflow.NET");
 
             // connect to VM
-            MFconnection mfConnection = new MFconnection("kvm", 2);
+            MFconnection mfConnection = new MFconnection("kvm", loglevel: 2);
             if (!mfConnection.Success) 
             {
                 Console.WriteLine("### Failed to initialize memflow connection!");

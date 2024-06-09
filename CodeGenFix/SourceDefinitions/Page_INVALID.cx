@@ -1,0 +1,6 @@
+        public static readonly Page Page_INVALID = new Page()
+        {
+            page_type = PageType_UNKNOWN, 
+            page_base = ulong.MaxValue, 
+            page_size = 0
+        };

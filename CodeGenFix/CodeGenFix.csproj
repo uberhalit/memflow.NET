@@ -2,17 +2,24 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <StartupObject>CodeGenFix.Program</StartupObject>
     <Platforms>x64</Platforms>
+	<Copyright>Copyright © uberhalit 2024</Copyright>
+	<Version>0.2.1</Version>
+  </PropertyGroup>
+
+  <PropertyGroup>
+	<!-- Workaround for issue https://github.com/microsoft/ClangSharp/issues/129 -->
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' AND '$(PackAsTool)' != 'true'">$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CppAst" Version="0.7.3" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.0.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
+    <PackageReference Include="CppAst" Version="0.20.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.9.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
   </ItemGroup>
 
 	<ItemGroup>
@@ -25,13 +32,17 @@
 	<ItemGroup>
 	  <None Remove="SourceDefinitions\NativeInheritanceAttribute.cx" />
 	  <None Remove="SourceDefinitions\NativeTypeNameAttribute.cx" />
+	  <None Remove="SourceDefinitions\Page_INVALID.cx" />
+	  <None Remove="SourceDefinitions\PhysicalAddress_INVALID.cx" />
 	  <None Remove="SourceDefinitions\ProcessInfo.cx" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <Content Include="SourceDefinitions\NativeInheritanceAttribute.cx" />
 	  <Content Include="SourceDefinitions\NativeTypeNameAttribute.cx" />
-	  <Content Include="SourceDefinitions\ProcessInfo.cx">
+      <Content Include="SourceDefinitions\ProcessInfo.cx" />
+	  <Content Include="SourceDefinitions\PhysicalAddress_INVALID.cx" />
+	  <Content Include="SourceDefinitions\Page_INVALID.cx">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	    <Visible>True</Visible>
 	  </Content>

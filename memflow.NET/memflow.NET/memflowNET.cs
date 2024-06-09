@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using memflowNET.Interop;
 
 /// <summary>
-/// Version 1.1.0.0
+/// Version 1.2.0.0 - memflow-ffi >= 0.2.1
 /// </summary>
 namespace memflowNET
 {
@@ -163,7 +163,7 @@ namespace memflowNET
                 if (this._loglevel > 2)
                     PrintLog("### Connector freed");
             }
-            // dropping inventory on a FPGA device crashed memflow, so we skip it for now
+            // dropping inventory on a FPGA device crashes memflow, so we skip it for now
             if (!this._IsFpga)
                 Methods.inventory_free(this._inventory);
             if (this._loglevel > 2)
@@ -178,7 +178,7 @@ namespace memflowNET
         public bool IsKeyDown(int vk)
         {
             if (this._keyboard == null)
-                return false;
+                throw new NotSupportedException("Keyboard monitoring not initialized!");
             return Methods.mf_keyboard_is_down(this._keyboard, vk);
         }
 

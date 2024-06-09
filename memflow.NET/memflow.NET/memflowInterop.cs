@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -92,8 +93,8 @@ namespace memflowNET.Interop
     /// It scans system directories and collects valid memflow plugins. They can then be instantiatedeasily. The reason the libraries are collected is to allow for reuse, and save performance
     /// # Examples
     /// Creating a OS instance, the recommended way:
-    /// no_runuse memflow::plugins::Inventory;# use memflow::plugins::OsInstanceArcBox;# use memflow::error::Result;# fn test() -> Result< OsInstanceArcBox<'static>> {let inventory = Inventory::scan();inventory.builder().connector("qemu").os("win32").build()# }# test().ok();
-    /// Nesting connectors and os plugins: no_runuse memflow::plugins::{Inventory, Args};# use memflow::error::Result;# fn test() -> Result<()> {let inventory = Inventory::scan();let os = inventory.builder().connector("qemu").os("linux").connector("qemu").os("win32").build();# Ok(())# }# test().ok();
+    /// ```no_runuse memflow::plugins::Inventory;# use memflow::plugins::OsInstanceArcBox;# use memflow::error::Result;# fn test() -> Result<OsInstanceArcBox<'static>> {let inventory = Inventory::scan();inventory.builder().connector("qemu").os("win32").build()# }# test().ok();```
+    /// Nesting connectors and os plugins:```no_runuse memflow::plugins::{Inventory, Args};# use memflow::error::Result;# fn test() -> Result<()> {let inventory = Inventory::scan();let os = inventory.builder().connector("qemu").os("linux").connector("qemu").os("win32").build();# Ok(())# }# test().ok();```
     /// </summary>
     public partial struct Inventory
     {
@@ -355,7 +356,8 @@ namespace memflowNET.Interop
         [NativeTypeName("umem")]
         public ulong real_size;
 
-        public bool @readonly;
+        [NativeTypeName("bool")]
+        public byte @readonly;
 
         [NativeTypeName("uint32_t")]
         public uint ideal_batch_size;
@@ -511,9 +513,11 @@ namespace memflowNET.Interop
         [NativeTypeName("umem")]
         public ulong real_size;
 
-        public bool @readonly;
+        [NativeTypeName("bool")]
+        public byte @readonly;
 
-        public bool little_endian;
+        [NativeTypeName("bool")]
+        public byte little_endian;
 
         [NativeTypeName("uint8_t")]
         public byte arch_bits;
@@ -629,7 +633,9 @@ namespace memflowNET.Interop
     }
 
     /// <summary>
-    /// Forward declarations for vtables and their wrappers
+    /// Simple CGlue trait object.
+    /// This is the simplest form of CGlue object, represented by a container and vtable for a singletrait.
+    /// Container merely is a this pointer with some optional temporary return reference context.
     /// </summary>
     public unsafe partial struct CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void
     {
@@ -692,10 +698,10 @@ namespace memflowNET.Interop
     }
 
     /// <summary>
-    /// CGlue vtable for trait ConnectorCpuStateInner.
+    /// CGlue vtable for trait ConnectorCpuState.
     /// This virtual function table contains ABI-safe interface for the given trait.
     /// </summary>
-    public unsafe partial struct ConnectorCpuStateInnerVtbl_ConnectorInstanceContainer_CBox_c_void_____CArc_c_void
+    public unsafe partial struct ConnectorCpuStateVtbl_ConnectorInstanceContainer_CBox_c_void_____CArc_c_void
     {
         [NativeTypeName("int32_t (*)(struct ConnectorInstanceContainer_CBox_c_void_____CArc_c_void *, CpuStateBase_CBox_c_void_____CArc_c_void *)")]
         public delegate* unmanaged[Cdecl]<ConnectorInstanceContainer_CBox_c_void_____CArc_c_void*, CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void*, int> cpu_state;
@@ -705,7 +711,7 @@ namespace memflowNET.Interop
     }
 
     /// <summary>
-    /// Trait group potentially implementing `:: cglue :: ext :: core :: clone :: Clone <> + PhysicalMemory <> + for <'cglue_c > ConnectorCpuStateInner <'cglue_c, >` traits.
+    /// Trait group potentially implementing `:: cglue :: ext :: core :: clone :: Clone <> + PhysicalMemory <> + ConnectorCpuState <>` traits.
     /// Optional traits are not implemented here, however. There are numerous conversionfunctions available for safely retrieving a concrete collection of traits.
     /// `check_impl_` functions allow to check if the object implements the wanted traits.
     /// `into_impl_` functions consume the object and produce a new final structure thatkeeps only the required information.
@@ -720,8 +726,8 @@ namespace memflowNET.Interop
         [NativeTypeName("const struct PhysicalMemoryVtbl_ConnectorInstanceContainer_CBox_c_void_____CArc_c_void *")]
         public PhysicalMemoryVtbl_ConnectorInstanceContainer_CBox_c_void_____CArc_c_void* vtbl_physicalmemory;
 
-        [NativeTypeName("const struct ConnectorCpuStateInnerVtbl_ConnectorInstanceContainer_CBox_c_void_____CArc_c_void *")]
-        public ConnectorCpuStateInnerVtbl_ConnectorInstanceContainer_CBox_c_void_____CArc_c_void* vtbl_connectorcpustateinner;
+        [NativeTypeName("const struct ConnectorCpuStateVtbl_ConnectorInstanceContainer_CBox_c_void_____CArc_c_void *")]
+        public ConnectorCpuStateVtbl_ConnectorInstanceContainer_CBox_c_void_____CArc_c_void* vtbl_connectorcpustate;
 
         [NativeTypeName("struct ConnectorInstanceContainer_CBox_c_void_____CArc_c_void")]
         public ConnectorInstanceContainer_CBox_c_void_____CArc_c_void container;
@@ -770,15 +776,16 @@ namespace memflowNET.Interop
     {
         public ProcessState_Tag tag;
 
-        [NativeTypeName("ProcessState::(anonymous union at memflow.h:1135:5)")]
+        [NativeTypeName("__AnonymousRecord_memflow_L1165_C5")]
         public _Anonymous_e__Union Anonymous;
 
+        [UnscopedRef]
         public ref int dead
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.Anonymous.dead, 1));
+                return ref Anonymous.Anonymous.dead;
             }
         }
 
@@ -786,7 +793,7 @@ namespace memflowNET.Interop
         public partial struct _Anonymous_e__Union
         {
             [FieldOffset(0)]
-            [NativeTypeName("ProcessState::(anonymous struct at memflow.h:1136:9)")]
+            [NativeTypeName("__AnonymousRecord_memflow_L1166_C9")]
             public _Anonymous_e__Struct Anonymous;
 
             public partial struct _Anonymous_e__Struct
@@ -809,40 +816,44 @@ namespace memflowNET.Interop
         [NativeTypeName("uint8_t")]
         public byte _0;
 
-        public bool _1;
+        [NativeTypeName("bool")]
+        public byte _1;
     }
 
     public partial struct ArchitectureIdent
     {
         public ArchitectureIdent_Tag tag;
 
-        [NativeTypeName("ArchitectureIdent::(anonymous union at memflow.h:1178:5)")]
+        [NativeTypeName("__AnonymousRecord_memflow_L1208_C5")]
         public _Anonymous_e__Union Anonymous;
 
+        [UnscopedRef]
         public ref nuint unknown
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.Anonymous1.unknown, 1));
+                return ref Anonymous.Anonymous1.unknown;
             }
         }
 
+        [UnscopedRef]
         public ref ArchitectureIdent_X86_Body x86
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.x86, 1));
+                return ref Anonymous.x86;
             }
         }
 
+        [UnscopedRef]
         public ref nuint a_arch64
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.Anonymous2.a_arch64, 1));
+                return ref Anonymous.Anonymous2.a_arch64;
             }
         }
 
@@ -850,14 +861,14 @@ namespace memflowNET.Interop
         public partial struct _Anonymous_e__Union
         {
             [FieldOffset(0)]
-            [NativeTypeName("ArchitectureIdent::(anonymous struct at memflow.h:1179:9)")]
+            [NativeTypeName("__AnonymousRecord_memflow_L1209_C9")]
             public _Anonymous1_e__Struct Anonymous1;
 
             [FieldOffset(0)]
             public ArchitectureIdent_X86_Body x86;
 
             [FieldOffset(0)]
-            [NativeTypeName("ArchitectureIdent::(anonymous struct at memflow.h:1183:9)")]
+            [NativeTypeName("__AnonymousRecord_memflow_L1213_C9")]
             public _Anonymous2_e__Struct Anonymous2;
 
             public partial struct _Anonymous1_e__Struct
@@ -878,7 +889,7 @@ namespace memflowNET.Interop
     /// Process information structure
     /// This structure implements basic process information. Architectures are provided both of thesystem, and of the process.
     /// </summary>
-    [StructLayout(LayoutKind.Explicit, Size = 56)]
+    [StructLayout(LayoutKind.Explicit, Size = 72)]
     public unsafe partial struct ProcessInfo
     {
         [FieldOffset(0)]
@@ -912,6 +923,14 @@ namespace memflowNET.Interop
         [FieldOffset(52)]
         [NativeTypeName("struct ArchitectureIdent")]
         public ArchitectureIdent proc_arch;
+		
+		[FieldOffset(56)]
+        [NativeTypeName("Address")]
+        public ulong dtb1;
+		
+		[FieldOffset(64)]
+        [NativeTypeName("Address")]
+        public ulong dtb2;
     }
 
     public unsafe partial struct Callback_c_void__ProcessInfo
@@ -1166,15 +1185,16 @@ namespace memflowNET.Interop
     {
         public COption_Address_Tag tag;
 
-        [NativeTypeName("COption_Address::(anonymous union at memflow.h:1533:5)")]
+        [NativeTypeName("__AnonymousRecord_memflow_L1578_C5")]
         public _Anonymous_e__Union Anonymous;
 
+        [UnscopedRef]
         public ref ulong some
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get
             {
-                return ref MemoryMarshal.GetReference(MemoryMarshal.CreateSpan(ref Anonymous.Anonymous.some, 1));
+                return ref Anonymous.Anonymous.some;
             }
         }
 
@@ -1182,7 +1202,7 @@ namespace memflowNET.Interop
         public partial struct _Anonymous_e__Union
         {
             [FieldOffset(0)]
-            [NativeTypeName("COption_Address::(anonymous struct at memflow.h:1534:9)")]
+            [NativeTypeName("__AnonymousRecord_memflow_L1579_C9")]
             public _Anonymous_e__Struct Anonymous;
 
             public partial struct _Anonymous_e__Struct
@@ -1210,10 +1230,10 @@ namespace memflowNET.Interop
     }
 
     /// <summary>
-    /// CGlue vtable for trait OsInner.
+    /// CGlue vtable for trait Os.
     /// This virtual function table contains ABI-safe interface for the given trait.
     /// </summary>
-    public unsafe partial struct OsInnerVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void
+    public unsafe partial struct OsVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void
     {
         [NativeTypeName("int32_t (*)(struct OsInstanceContainer_CBox_c_void_____CArc_c_void *, AddressCallback)")]
         public delegate* unmanaged[Cdecl]<OsInstanceContainer_CBox_c_void_____CArc_c_void*, Callback_c_void__Address, int> process_address_list_callback;
@@ -1467,10 +1487,10 @@ namespace memflowNET.Interop
     }
 
     /// <summary>
-    /// CGlue vtable for trait OsKeyboardInner.
+    /// CGlue vtable for trait OsKeyboard.
     /// This virtual function table contains ABI-safe interface for the given trait.
     /// </summary>
-    public unsafe partial struct OsKeyboardInnerVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void
+    public unsafe partial struct OsKeyboardVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void
     {
         [NativeTypeName("int32_t (*)(struct OsInstanceContainer_CBox_c_void_____CArc_c_void *, KeyboardBase_CBox_c_void_____CArc_c_void *)")]
         public delegate* unmanaged[Cdecl]<OsInstanceContainer_CBox_c_void_____CArc_c_void*, CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*, int> keyboard;
@@ -1539,7 +1559,7 @@ namespace memflowNET.Interop
     }
 
     /// <summary>
-    /// Trait group potentially implementing `:: cglue :: ext :: core :: clone :: Clone <> + for <'cglue_c > OsInner <'cglue_c, > + MemoryView <> + for <'cglue_c > OsKeyboardInner <'cglue_c, > + PhysicalMemory <> + VirtualTranslate <>` traits.
+    /// Trait group potentially implementing `:: cglue :: ext :: core :: clone :: Clone <> + Os <> + MemoryView <> + OsKeyboard <> + PhysicalMemory <> + VirtualTranslate <>` traits.
     /// Optional traits are not implemented here, however. There are numerous conversionfunctions available for safely retrieving a concrete collection of traits.
     /// `check_impl_` functions allow to check if the object implements the wanted traits.
     /// `into_impl_` functions consume the object and produce a new final structure thatkeeps only the required information.
@@ -1551,14 +1571,14 @@ namespace memflowNET.Interop
         [NativeTypeName("const struct CloneVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void *")]
         public CloneVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void* vtbl_clone;
 
-        [NativeTypeName("const struct OsInnerVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void *")]
-        public OsInnerVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void* vtbl_osinner;
+        [NativeTypeName("const struct OsVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void *")]
+        public OsVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void* vtbl_os;
 
         [NativeTypeName("const struct MemoryViewVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void *")]
         public MemoryViewVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void* vtbl_memoryview;
 
-        [NativeTypeName("const struct OsKeyboardInnerVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void *")]
-        public OsKeyboardInnerVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void* vtbl_oskeyboardinner;
+        [NativeTypeName("const struct OsKeyboardVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void *")]
+        public OsKeyboardVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void* vtbl_oskeyboard;
 
         [NativeTypeName("const struct PhysicalMemoryVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void *")]
         public PhysicalMemoryVtbl_OsInstanceContainer_CBox_c_void_____CArc_c_void* vtbl_physicalmemory;
@@ -1621,6 +1641,9 @@ namespace memflowNET.Interop
     {
         [NativeTypeName("struct ProcessState (*)(struct ProcessInstanceContainer_CBox_c_void_____CArc_c_void *)")]
         public delegate* unmanaged[Cdecl]<ProcessInstanceContainer_CBox_c_void_____CArc_c_void*, ProcessState> state;
+
+        [NativeTypeName("int32_t (*)(struct ProcessInstanceContainer_CBox_c_void_____CArc_c_void *, Address, Address)")]
+        public delegate* unmanaged[Cdecl]<ProcessInstanceContainer_CBox_c_void_____CArc_c_void*, ulong, ulong, int> set_dtb;
 
         [NativeTypeName("int32_t (*)(struct ProcessInstanceContainer_CBox_c_void_____CArc_c_void *, const struct ArchitectureIdent *, ModuleAddressCallback)")]
         public delegate* unmanaged[Cdecl]<ProcessInstanceContainer_CBox_c_void_____CArc_c_void*, ArchitectureIdent*, Callback_c_void__ModuleAddressInfo, int> module_address_list_callback;
@@ -1789,6 +1812,9 @@ namespace memflowNET.Interop
     {
         [NativeTypeName("struct ProcessState (*)(struct IntoProcessInstanceContainer_CBox_c_void_____CArc_c_void *)")]
         public delegate* unmanaged[Cdecl]<IntoProcessInstanceContainer_CBox_c_void_____CArc_c_void*, ProcessState> state;
+
+        [NativeTypeName("int32_t (*)(struct IntoProcessInstanceContainer_CBox_c_void_____CArc_c_void *, Address, Address)")]
+        public delegate* unmanaged[Cdecl]<IntoProcessInstanceContainer_CBox_c_void_____CArc_c_void*, ulong, ulong, int> set_dtb;
 
         [NativeTypeName("int32_t (*)(struct IntoProcessInstanceContainer_CBox_c_void_____CArc_c_void *, const struct ArchitectureIdent *, ModuleAddressCallback)")]
         public delegate* unmanaged[Cdecl]<IntoProcessInstanceContainer_CBox_c_void_____CArc_c_void*, ArchitectureIdent*, Callback_c_void__ModuleAddressInfo, int> module_address_list_callback;
@@ -2169,7 +2195,7 @@ namespace memflowNET.Interop
         /// <summary>
         /// Free a connector instance
         /// # Safety
-        /// `conn` has to point to a valid [`ConnectorInstance`] created by one of the providedfunctions.
+        /// `conn` has to point to a valid [`ConnectorInstance`](ConnectorInstanceArcBox) created by one of the providedfunctions.
         /// There has to be no instance of `PhysicalMemory` created from the input `conn`, because theywill become invalid.
         /// </summary>
         [DllImport("libmemflow_ffi", CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
@@ -2240,12 +2266,12 @@ namespace memflowNET.Interop
 
         public static void mf_pause(void* self)
         {
-            ((CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void*)self)->vtbl->pause(&((CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void*)self)->container);
+            (((CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void*)(self))->vtbl)->pause(&((CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void*)(self))->container);
         }
 
         public static void mf_resume(void* self)
         {
-            ((CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void*)self)->vtbl->resume(&((CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void*)self)->container);
+            (((CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void*)(self))->vtbl)->resume(&((CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void*)(self))->container);
         }
 
         public static void mf_cpustate_drop([NativeTypeName("struct CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void")] CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void self)
@@ -2256,7 +2282,7 @@ namespace memflowNET.Interop
 
         public static bool mf_keyboardstate_is_down([NativeTypeName("const void *")] void* self, [NativeTypeName("int32_t")] int vk)
         {
-            bool __ret = ((CGlueTraitObj_CBox_c_void_____KeyboardStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardStateRetTmp_CArc_c_void______________CArc_c_void_____KeyboardStateRetTmp_CArc_c_void*)self)->vtbl->is_down(&((CGlueTraitObj_CBox_c_void_____KeyboardStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardStateRetTmp_CArc_c_void______________CArc_c_void_____KeyboardStateRetTmp_CArc_c_void*)self)->container, vk) != 0;
+            bool __ret = (((CGlueTraitObj_CBox_c_void_____KeyboardStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardStateRetTmp_CArc_c_void______________CArc_c_void_____KeyboardStateRetTmp_CArc_c_void*)(self))->vtbl)->is_down(&((CGlueTraitObj_CBox_c_void_____KeyboardStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardStateRetTmp_CArc_c_void______________CArc_c_void_____KeyboardStateRetTmp_CArc_c_void*)(self))->container, vk) != 0;
 
             return __ret;
         }
@@ -2269,20 +2295,20 @@ namespace memflowNET.Interop
 
         public static bool mf_keyboard_is_down(void* self, [NativeTypeName("int32_t")] int vk)
         {
-            bool __ret = ((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)self)->vtbl->is_down(&((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)self)->container, vk) != 0;
+            bool __ret = (((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)(self))->vtbl)->is_down(&((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)(self))->container, vk) != 0;
 
             return __ret;
         }
 
         public static void mf_set_down(void* self, [NativeTypeName("int32_t")] int vk, bool down)
         {
-            ((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)self)->vtbl->set_down(&((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)self)->container, vk, down ? (byte)0x1 : (byte)0x0);
+            (((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)(self))->vtbl)->set_down(&((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)(self))->container, vk, down ? (byte)0x1 : (byte)0x0);
         }
 
         [return: NativeTypeName("int32_t")]
         public static int mf_state(void* self, [NativeTypeName("KeyboardStateBase_CBox_c_void_____CArc_c_void *")] CGlueTraitObj_CBox_c_void_____KeyboardStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardStateRetTmp_CArc_c_void______________CArc_c_void_____KeyboardStateRetTmp_CArc_c_void* ok_out)
         {
-            int __ret = ((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)self)->vtbl->state(&((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)self)->container, ok_out);
+            int __ret = (((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)(self))->vtbl)->state(&((CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)(self))->container, ok_out);
 
             return __ret;
         }
@@ -2296,7 +2322,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_read_raw_iter(void* self, [NativeTypeName("ReadRawMemOps")] MemOps_ReadDataRaw__ReadData data)
         {
-            int __ret = ((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->vtbl->read_raw_iter(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->container, data);
+            int __ret = (((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->vtbl)->read_raw_iter(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2304,7 +2330,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_write_raw_iter(void* self, [NativeTypeName("WriteRawMemOps")] MemOps_WriteDataRaw__WriteData data)
         {
-            int __ret = ((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->vtbl->write_raw_iter(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->container, data);
+            int __ret = (((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->vtbl)->write_raw_iter(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2312,7 +2338,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("struct MemoryViewMetadata")]
         public static MemoryViewMetadata mf_metadata([NativeTypeName("const void *")] void* self)
         {
-            MemoryViewMetadata __ret = ((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->vtbl->metadata(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->container);
+            MemoryViewMetadata __ret = (((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->vtbl)->metadata(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->container);
 
             return __ret;
         }
@@ -2320,7 +2346,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_read_iter(void* self, [NativeTypeName("struct CIterator_ReadData")] CIterator_ReadData inp, [NativeTypeName("ReadCallback *")] Callback_c_void__ReadData* @out, [NativeTypeName("ReadCallback *")] Callback_c_void__ReadData* out_fail)
         {
-            int __ret = ((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->vtbl->read_iter(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->container, inp, @out, out_fail);
+            int __ret = (((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->vtbl)->read_iter(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->container, inp, @out, out_fail);
 
             return __ret;
         }
@@ -2328,7 +2354,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_read_raw_list(void* self, [NativeTypeName("struct CSliceMut_ReadData")] CSliceMut_ReadData data)
         {
-            int __ret = ((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->vtbl->read_raw_list(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->container, data);
+            int __ret = (((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->vtbl)->read_raw_list(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2336,7 +2362,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_read_raw_into(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct CSliceMut_u8")] CSliceMut_u8 @out)
         {
-            int __ret = ((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->vtbl->read_raw_into(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->container, addr, @out);
+            int __ret = (((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->vtbl)->read_raw_into(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->container, addr, @out);
 
             return __ret;
         }
@@ -2344,7 +2370,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_write_iter(void* self, [NativeTypeName("struct CIterator_WriteData")] CIterator_WriteData inp, [NativeTypeName("WriteCallback *")] Callback_c_void__WriteData* @out, [NativeTypeName("WriteCallback *")] Callback_c_void__WriteData* out_fail)
         {
-            int __ret = ((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->vtbl->write_iter(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->container, inp, @out, out_fail);
+            int __ret = (((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->vtbl)->write_iter(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->container, inp, @out, out_fail);
 
             return __ret;
         }
@@ -2352,7 +2378,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_write_raw_list(void* self, [NativeTypeName("struct CSliceRef_WriteData")] CSliceRef_WriteData data)
         {
-            int __ret = ((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->vtbl->write_raw_list(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->container, data);
+            int __ret = (((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->vtbl)->write_raw_list(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2360,7 +2386,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_write_raw(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 data)
         {
-            int __ret = ((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->vtbl->write_raw(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)self)->container, addr, data);
+            int __ret = (((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->vtbl)->write_raw(&((CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void*)(self))->container, addr, data);
 
             return __ret;
         }
@@ -2376,7 +2402,7 @@ namespace memflowNET.Interop
         {
             ConnectorInstance_CBox_c_void_____CArc_c_void __ret = new ConnectorInstance_CBox_c_void_____CArc_c_void();
 
-            __ret.container=(((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_clone->clone(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->container));
+            __ret.container = (((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_clone)->clone(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->container);
             return __ret;
         }
 
@@ -2391,7 +2417,7 @@ namespace memflowNET.Interop
         {
             IntoCpuState_CBox_c_void_____CArc_c_void __ret = new IntoCpuState_CBox_c_void_____CArc_c_void();
 
-            __ret.container=(((IntoCpuState_CBox_c_void_____CArc_c_void*)self)->vtbl_clone->clone(&((IntoCpuState_CBox_c_void_____CArc_c_void*)self)->container));
+            __ret.container = (((IntoCpuState_CBox_c_void_____CArc_c_void*)(self))->vtbl_clone)->clone(&((IntoCpuState_CBox_c_void_____CArc_c_void*)(self))->container);
             return __ret;
         }
 
@@ -2403,18 +2429,18 @@ namespace memflowNET.Interop
 
         public static void mf_intocpustate_pause(void* self)
         {
-            ((IntoCpuState_CBox_c_void_____CArc_c_void*)self)->vtbl_cpustate->pause(&((IntoCpuState_CBox_c_void_____CArc_c_void*)self)->container);
+            (((IntoCpuState_CBox_c_void_____CArc_c_void*)(self))->vtbl_cpustate)->pause(&((IntoCpuState_CBox_c_void_____CArc_c_void*)(self))->container);
         }
 
         public static void mf_intocpustate_resume(void* self)
         {
-            ((IntoCpuState_CBox_c_void_____CArc_c_void*)self)->vtbl_cpustate->resume(&((IntoCpuState_CBox_c_void_____CArc_c_void*)self)->container);
+            (((IntoCpuState_CBox_c_void_____CArc_c_void*)(self))->vtbl_cpustate)->resume(&((IntoCpuState_CBox_c_void_____CArc_c_void*)(self))->container);
         }
 
         [return: NativeTypeName("int32_t")]
         public static int mf_connectorinstance_cpu_state(void* self, [NativeTypeName("CpuStateBase_CBox_c_void_____CArc_c_void *")] CGlueTraitObj_CBox_c_void_____CpuStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____CpuStateRetTmp_CArc_c_void______________CArc_c_void_____CpuStateRetTmp_CArc_c_void* ok_out)
         {
-            int __ret = ((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_connectorcpustateinner->cpu_state(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->container, ok_out);
+            int __ret = (((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_connectorcpustate)->cpu_state(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->container, ok_out);
 
             return __ret;
         }
@@ -2423,7 +2449,7 @@ namespace memflowNET.Interop
         public static int mf_connectorinstance_into_cpu_state([NativeTypeName("struct ConnectorInstance_CBox_c_void_____CArc_c_void")] ConnectorInstance_CBox_c_void_____CArc_c_void self, [NativeTypeName("struct IntoCpuState_CBox_c_void_____CArc_c_void *")] IntoCpuState_CBox_c_void_____CArc_c_void* ok_out)
         {
             CArc_c_void ___ctx = ctx_arc_clone(&self.container.context);
-            int __ret = (self.vtbl_connectorcpustateinner)->into_cpu_state(self.container, ok_out);
+            int __ret = (self.vtbl_connectorcpustate)->into_cpu_state(self.container, ok_out);
 
             ctx_arc_drop(&___ctx);
             return __ret;
@@ -2434,7 +2460,7 @@ namespace memflowNET.Interop
         {
             OsInstance_CBox_c_void_____CArc_c_void __ret = new OsInstance_CBox_c_void_____CArc_c_void();
 
-            __ret.container=(((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_clone->clone(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container));
+            __ret.container = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_clone)->clone(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container);
             return __ret;
         }
 
@@ -2447,7 +2473,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_process_address_list_callback(void* self, [NativeTypeName("AddressCallback")] Callback_c_void__Address callback)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->process_address_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, callback);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->process_address_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, callback);
 
             return __ret;
         }
@@ -2455,7 +2481,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_process_info_list_callback(void* self, [NativeTypeName("ProcessInfoCallback")] Callback_c_void__ProcessInfo callback)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->process_info_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, callback);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->process_info_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, callback);
 
             return __ret;
         }
@@ -2463,7 +2489,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_process_info_by_address(void* self, [NativeTypeName("Address")] ulong address, [NativeTypeName("struct ProcessInfo *")] ProcessInfo* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->process_info_by_address(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, address, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->process_info_by_address(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, address, ok_out);
 
             return __ret;
         }
@@ -2471,7 +2497,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_process_info_by_name(void* self, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ProcessInfo *")] ProcessInfo* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->process_info_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, name, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->process_info_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, name, ok_out);
 
             return __ret;
         }
@@ -2479,7 +2505,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_process_info_by_pid(void* self, [NativeTypeName("Pid")] uint pid, [NativeTypeName("struct ProcessInfo *")] ProcessInfo* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->process_info_by_pid(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, pid, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->process_info_by_pid(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, pid, ok_out);
 
             return __ret;
         }
@@ -2487,7 +2513,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_process_by_info(void* self, [NativeTypeName("struct ProcessInfo")] ProcessInfo info, [NativeTypeName("struct ProcessInstance_CBox_c_void_____CArc_c_void *")] ProcessInstance_CBox_c_void_____CArc_c_void* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->process_by_info(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, info, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->process_by_info(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, ok_out);
 
             return __ret;
         }
@@ -2496,7 +2522,7 @@ namespace memflowNET.Interop
         public static int mf_osinstance_into_process_by_info([NativeTypeName("struct OsInstance_CBox_c_void_____CArc_c_void")] OsInstance_CBox_c_void_____CArc_c_void self, [NativeTypeName("struct ProcessInfo")] ProcessInfo info, [NativeTypeName("struct IntoProcessInstance_CBox_c_void_____CArc_c_void *")] IntoProcessInstance_CBox_c_void_____CArc_c_void* ok_out)
         {
             CArc_c_void ___ctx = ctx_arc_clone(&self.container.context);
-            int __ret = (self.vtbl_osinner)->into_process_by_info(self.container, info, ok_out);
+            int __ret = (self.vtbl_os)->into_process_by_info(self.container, info, ok_out);
 
             ctx_arc_drop(&___ctx);
             return __ret;
@@ -2505,7 +2531,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_process_by_address(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct ProcessInstance_CBox_c_void_____CArc_c_void *")] ProcessInstance_CBox_c_void_____CArc_c_void* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->process_by_address(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, addr, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->process_by_address(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, addr, ok_out);
 
             return __ret;
         }
@@ -2513,7 +2539,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_process_by_name(void* self, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ProcessInstance_CBox_c_void_____CArc_c_void *")] ProcessInstance_CBox_c_void_____CArc_c_void* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->process_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, name, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->process_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, name, ok_out);
 
             return __ret;
         }
@@ -2521,7 +2547,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_process_by_pid(void* self, [NativeTypeName("Pid")] uint pid, [NativeTypeName("struct ProcessInstance_CBox_c_void_____CArc_c_void *")] ProcessInstance_CBox_c_void_____CArc_c_void* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->process_by_pid(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, pid, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->process_by_pid(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, pid, ok_out);
 
             return __ret;
         }
@@ -2530,7 +2556,7 @@ namespace memflowNET.Interop
         public static int mf_osinstance_into_process_by_address([NativeTypeName("struct OsInstance_CBox_c_void_____CArc_c_void")] OsInstance_CBox_c_void_____CArc_c_void self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct IntoProcessInstance_CBox_c_void_____CArc_c_void *")] IntoProcessInstance_CBox_c_void_____CArc_c_void* ok_out)
         {
             CArc_c_void ___ctx = ctx_arc_clone(&self.container.context);
-            int __ret = (self.vtbl_osinner)->into_process_by_address(self.container, addr, ok_out);
+            int __ret = (self.vtbl_os)->into_process_by_address(self.container, addr, ok_out);
 
             ctx_arc_drop(&___ctx);
             return __ret;
@@ -2540,7 +2566,7 @@ namespace memflowNET.Interop
         public static int mf_osinstance_into_process_by_name([NativeTypeName("struct OsInstance_CBox_c_void_____CArc_c_void")] OsInstance_CBox_c_void_____CArc_c_void self, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct IntoProcessInstance_CBox_c_void_____CArc_c_void *")] IntoProcessInstance_CBox_c_void_____CArc_c_void* ok_out)
         {
             CArc_c_void ___ctx = ctx_arc_clone(&self.container.context);
-            int __ret = (self.vtbl_osinner)->into_process_by_name(self.container, name, ok_out);
+            int __ret = (self.vtbl_os)->into_process_by_name(self.container, name, ok_out);
 
             ctx_arc_drop(&___ctx);
             return __ret;
@@ -2550,7 +2576,7 @@ namespace memflowNET.Interop
         public static int mf_osinstance_into_process_by_pid([NativeTypeName("struct OsInstance_CBox_c_void_____CArc_c_void")] OsInstance_CBox_c_void_____CArc_c_void self, [NativeTypeName("Pid")] uint pid, [NativeTypeName("struct IntoProcessInstance_CBox_c_void_____CArc_c_void *")] IntoProcessInstance_CBox_c_void_____CArc_c_void* ok_out)
         {
             CArc_c_void ___ctx = ctx_arc_clone(&self.container.context);
-            int __ret = (self.vtbl_osinner)->into_process_by_pid(self.container, pid, ok_out);
+            int __ret = (self.vtbl_os)->into_process_by_pid(self.container, pid, ok_out);
 
             ctx_arc_drop(&___ctx);
             return __ret;
@@ -2559,7 +2585,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_module_address_list_callback(void* self, [NativeTypeName("AddressCallback")] Callback_c_void__Address callback)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->module_address_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, callback);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->module_address_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, callback);
 
             return __ret;
         }
@@ -2567,7 +2593,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_module_list_callback(void* self, [NativeTypeName("ModuleInfoCallback")] Callback_c_void__ModuleInfo callback)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->module_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, callback);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->module_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, callback);
 
             return __ret;
         }
@@ -2575,7 +2601,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_module_by_address(void* self, [NativeTypeName("Address")] ulong address, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->module_by_address(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, address, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->module_by_address(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, address, ok_out);
 
             return __ret;
         }
@@ -2583,7 +2609,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_module_by_name(void* self, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->module_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, name, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->module_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, name, ok_out);
 
             return __ret;
         }
@@ -2591,7 +2617,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_primary_module_address(void* self, [NativeTypeName("Address *")] ulong* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->primary_module_address(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->primary_module_address(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, ok_out);
 
             return __ret;
         }
@@ -2599,7 +2625,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_primary_module(void* self, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->primary_module(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->primary_module(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, ok_out);
 
             return __ret;
         }
@@ -2607,7 +2633,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_module_import_list_callback(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("ImportCallback")] Callback_c_void__ImportInfo callback)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->module_import_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, info, callback);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->module_import_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, callback);
 
             return __ret;
         }
@@ -2615,7 +2641,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_module_export_list_callback(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("ExportCallback")] Callback_c_void__ExportInfo callback)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->module_export_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, info, callback);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->module_export_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, callback);
 
             return __ret;
         }
@@ -2623,7 +2649,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_module_section_list_callback(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("SectionCallback")] Callback_c_void__SectionInfo callback)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->module_section_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, info, callback);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->module_section_list_callback(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, callback);
 
             return __ret;
         }
@@ -2631,7 +2657,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_module_import_by_name(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ImportInfo *")] ImportInfo* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->module_import_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, info, name, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->module_import_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, name, ok_out);
 
             return __ret;
         }
@@ -2639,7 +2665,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_module_export_by_name(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ExportInfo *")] ExportInfo* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->module_export_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, info, name, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->module_export_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, name, ok_out);
 
             return __ret;
         }
@@ -2647,7 +2673,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_module_section_by_name(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct SectionInfo *")] SectionInfo* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->module_section_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, info, name, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->module_section_by_name(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, name, ok_out);
 
             return __ret;
         }
@@ -2655,7 +2681,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("const struct OsInfo *")]
         public static OsInfo* mf_osinstance_info([NativeTypeName("const void *")] void* self)
         {
-            OsInfo* __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_osinner->info(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            OsInfo* __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_os)->info(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container);
 
             return __ret;
         }
@@ -2663,7 +2689,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_read_raw_iter(void* self, [NativeTypeName("ReadRawMemOps")] MemOps_ReadDataRaw__ReadData data)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_raw_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_raw_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2671,7 +2697,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_write_raw_iter(void* self, [NativeTypeName("WriteRawMemOps")] MemOps_WriteDataRaw__WriteData data)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_raw_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_raw_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2679,7 +2705,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("struct MemoryViewMetadata")]
         public static MemoryViewMetadata mf_osinstance_metadata([NativeTypeName("const void *")] void* self)
         {
-            MemoryViewMetadata __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->metadata(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            MemoryViewMetadata __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->metadata(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container);
 
             return __ret;
         }
@@ -2687,7 +2713,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_read_iter(void* self, [NativeTypeName("struct CIterator_ReadData")] CIterator_ReadData inp, [NativeTypeName("ReadCallback *")] Callback_c_void__ReadData* @out, [NativeTypeName("ReadCallback *")] Callback_c_void__ReadData* out_fail)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, inp, @out, out_fail);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, inp, @out, out_fail);
 
             return __ret;
         }
@@ -2695,7 +2721,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_read_raw_list(void* self, [NativeTypeName("struct CSliceMut_ReadData")] CSliceMut_ReadData data)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_raw_list(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_raw_list(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2703,7 +2729,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_read_raw_into(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct CSliceMut_u8")] CSliceMut_u8 @out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_raw_into(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, addr, @out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_raw_into(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, addr, @out);
 
             return __ret;
         }
@@ -2711,7 +2737,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_write_iter(void* self, [NativeTypeName("struct CIterator_WriteData")] CIterator_WriteData inp, [NativeTypeName("WriteCallback *")] Callback_c_void__WriteData* @out, [NativeTypeName("WriteCallback *")] Callback_c_void__WriteData* out_fail)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, inp, @out, out_fail);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, inp, @out, out_fail);
 
             return __ret;
         }
@@ -2719,7 +2745,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_write_raw_list(void* self, [NativeTypeName("struct CSliceRef_WriteData")] CSliceRef_WriteData data)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_raw_list(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_raw_list(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2727,7 +2753,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_write_raw(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 data)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_raw(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, addr, data);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_raw(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, addr, data);
 
             return __ret;
         }
@@ -2737,7 +2763,7 @@ namespace memflowNET.Interop
         {
             IntoKeyboard_CBox_c_void_____CArc_c_void __ret = new IntoKeyboard_CBox_c_void_____CArc_c_void();
 
-            __ret.container=(((IntoKeyboard_CBox_c_void_____CArc_c_void*)self)->vtbl_clone->clone(&((IntoKeyboard_CBox_c_void_____CArc_c_void*)self)->container));
+            __ret.container = (((IntoKeyboard_CBox_c_void_____CArc_c_void*)(self))->vtbl_clone)->clone(&((IntoKeyboard_CBox_c_void_____CArc_c_void*)(self))->container);
             return __ret;
         }
 
@@ -2749,20 +2775,20 @@ namespace memflowNET.Interop
 
         public static bool mf_intokeyboard_is_down(void* self, [NativeTypeName("int32_t")] int vk)
         {
-            bool __ret = ((IntoKeyboard_CBox_c_void_____CArc_c_void*)self)->vtbl_keyboard->is_down(&((IntoKeyboard_CBox_c_void_____CArc_c_void*)self)->container, vk) != 0;
+            bool __ret = (((IntoKeyboard_CBox_c_void_____CArc_c_void*)(self))->vtbl_keyboard)->is_down(&((IntoKeyboard_CBox_c_void_____CArc_c_void*)(self))->container, vk) != 0;
 
             return __ret;
         }
 
         public static void mf_intokeyboard_set_down(void* self, [NativeTypeName("int32_t")] int vk, bool down)
         {
-            ((IntoKeyboard_CBox_c_void_____CArc_c_void*)self)->vtbl_keyboard->set_down(&((IntoKeyboard_CBox_c_void_____CArc_c_void*)self)->container, vk, down ? (byte)0x1 : (byte)0x0);
+            (((IntoKeyboard_CBox_c_void_____CArc_c_void*)(self))->vtbl_keyboard)->set_down(&((IntoKeyboard_CBox_c_void_____CArc_c_void*)(self))->container, vk, down ? (byte)0x1 : (byte)0x0);
         }
 
         [return: NativeTypeName("int32_t")]
         public static int mf_intokeyboard_state(void* self, [NativeTypeName("KeyboardStateBase_CBox_c_void_____CArc_c_void *")] CGlueTraitObj_CBox_c_void_____KeyboardStateVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardStateRetTmp_CArc_c_void______________CArc_c_void_____KeyboardStateRetTmp_CArc_c_void* ok_out)
         {
-            int __ret = ((IntoKeyboard_CBox_c_void_____CArc_c_void*)self)->vtbl_keyboard->state(&((IntoKeyboard_CBox_c_void_____CArc_c_void*)self)->container, ok_out);
+            int __ret = (((IntoKeyboard_CBox_c_void_____CArc_c_void*)(self))->vtbl_keyboard)->state(&((IntoKeyboard_CBox_c_void_____CArc_c_void*)(self))->container, ok_out);
 
             return __ret;
         }
@@ -2770,7 +2796,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_keyboard(void* self, [NativeTypeName("KeyboardBase_CBox_c_void_____CArc_c_void *")] CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_oskeyboardinner->keyboard(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_oskeyboard)->keyboard(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, ok_out);
 
             return __ret;
         }
@@ -2779,7 +2805,7 @@ namespace memflowNET.Interop
         public static int mf_osinstance_into_keyboard([NativeTypeName("struct OsInstance_CBox_c_void_____CArc_c_void")] OsInstance_CBox_c_void_____CArc_c_void self, [NativeTypeName("struct IntoKeyboard_CBox_c_void_____CArc_c_void *")] IntoKeyboard_CBox_c_void_____CArc_c_void* ok_out)
         {
             CArc_c_void ___ctx = ctx_arc_clone(&self.container.context);
-            int __ret = (self.vtbl_oskeyboardinner)->into_keyboard(self.container, ok_out);
+            int __ret = (self.vtbl_oskeyboard)->into_keyboard(self.container, ok_out);
 
             ctx_arc_drop(&___ctx);
             return __ret;
@@ -2788,7 +2814,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_phys_read_raw_iter(void* self, [NativeTypeName("PhysicalReadMemOps")] MemOps_PhysicalReadData__ReadData data)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_physicalmemory->phys_read_raw_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_physicalmemory)->phys_read_raw_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2796,14 +2822,14 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_phys_write_raw_iter(void* self, [NativeTypeName("PhysicalWriteMemOps")] MemOps_PhysicalWriteData__WriteData data)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_physicalmemory->phys_write_raw_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_physicalmemory)->phys_write_raw_iter(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
 
         public static void mf_osinstance_set_mem_map(void* self, [NativeTypeName("struct CSliceRef_PhysicalMemoryMapping")] CSliceRef_PhysicalMemoryMapping _mem_map)
         {
-            ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_physicalmemory->set_mem_map(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, _mem_map);
+            (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_physicalmemory)->set_mem_map(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, _mem_map);
         }
 
         [return: NativeTypeName("MemoryViewBase_CBox_c_void_____CArc_c_void")]
@@ -2819,35 +2845,35 @@ namespace memflowNET.Interop
         [return: NativeTypeName("MemoryViewBase_CBox_c_void_____CArc_c_void")]
         public static CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void mf_osinstance_phys_view(void* self)
         {
-            CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_physicalmemory->phys_view(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_physicalmemory)->phys_view(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container);
 
             return __ret;
         }
 
         public static void mf_osinstance_virt_to_phys_list(void* self, [NativeTypeName("struct CSliceRef_VtopRange")] CSliceRef_VtopRange addrs, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out, [NativeTypeName("VirtualTranslationFailCallback")] Callback_c_void__VirtualTranslationFail out_fail)
         {
-            ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_to_phys_list(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, addrs, @out, out_fail);
+            (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_to_phys_list(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, addrs, @out, out_fail);
         }
 
         public static void mf_osinstance_virt_to_phys_range(void* self, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out)
         {
-            ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_to_phys_range(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, start, end, @out);
+            (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_to_phys_range(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, start, end, @out);
         }
 
         public static void mf_osinstance_virt_translation_map_range(void* self, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out)
         {
-            ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_translation_map_range(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, start, end, @out);
+            (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_translation_map_range(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, start, end, @out);
         }
 
         public static void mf_osinstance_virt_page_map_range(void* self, [NativeTypeName("imem")] long gap_size, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("MemoryRangeCallback")] Callback_c_void__MemoryRange @out)
         {
-            ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_page_map_range(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, gap_size, start, end, @out);
+            (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_page_map_range(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, gap_size, start, end, @out);
         }
 
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_virt_to_phys(void* self, [NativeTypeName("Address")] ulong address, [NativeTypeName("struct PhysicalAddress *")] PhysicalAddress* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_to_phys(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, address, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_to_phys(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, address, ok_out);
 
             return __ret;
         }
@@ -2855,33 +2881,33 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_osinstance_virt_page_info(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct Page *")] Page* ok_out)
         {
-            int __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_page_info(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, addr, ok_out);
+            int __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_page_info(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, addr, ok_out);
 
             return __ret;
         }
 
         public static void mf_osinstance_virt_translation_map(void* self, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out)
         {
-            ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_translation_map(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, @out);
+            (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_translation_map(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, @out);
         }
 
         [return: NativeTypeName("struct COption_Address")]
         public static COption_Address mf_osinstance_phys_to_virt(void* self, [NativeTypeName("Address")] ulong phys)
         {
-            COption_Address __ret = ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->phys_to_virt(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, phys);
+            COption_Address __ret = (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->phys_to_virt(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, phys);
 
             return __ret;
         }
 
         public static void mf_osinstance_virt_page_map(void* self, [NativeTypeName("imem")] long gap_size, [NativeTypeName("MemoryRangeCallback")] Callback_c_void__MemoryRange @out)
         {
-            ((OsInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_page_map(&((OsInstance_CBox_c_void_____CArc_c_void*)self)->container, gap_size, @out);
+            (((OsInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_page_map(&((OsInstance_CBox_c_void_____CArc_c_void*)(self))->container, gap_size, @out);
         }
 
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_read_raw_iter(void* self, [NativeTypeName("ReadRawMemOps")] MemOps_ReadDataRaw__ReadData data)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_raw_iter(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_raw_iter(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2889,7 +2915,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_write_raw_iter(void* self, [NativeTypeName("WriteRawMemOps")] MemOps_WriteDataRaw__WriteData data)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_raw_iter(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_raw_iter(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2897,7 +2923,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("struct MemoryViewMetadata")]
         public static MemoryViewMetadata mf_processinstance_metadata([NativeTypeName("const void *")] void* self)
         {
-            MemoryViewMetadata __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->metadata(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            MemoryViewMetadata __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->metadata(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container);
 
             return __ret;
         }
@@ -2905,7 +2931,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_read_iter(void* self, [NativeTypeName("struct CIterator_ReadData")] CIterator_ReadData inp, [NativeTypeName("ReadCallback *")] Callback_c_void__ReadData* @out, [NativeTypeName("ReadCallback *")] Callback_c_void__ReadData* out_fail)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_iter(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, inp, @out, out_fail);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_iter(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, inp, @out, out_fail);
 
             return __ret;
         }
@@ -2913,7 +2939,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_read_raw_list(void* self, [NativeTypeName("struct CSliceMut_ReadData")] CSliceMut_ReadData data)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_raw_list(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_raw_list(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2921,7 +2947,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_read_raw_into(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct CSliceMut_u8")] CSliceMut_u8 @out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_raw_into(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, addr, @out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_raw_into(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, addr, @out);
 
             return __ret;
         }
@@ -2929,7 +2955,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_write_iter(void* self, [NativeTypeName("struct CIterator_WriteData")] CIterator_WriteData inp, [NativeTypeName("WriteCallback *")] Callback_c_void__WriteData* @out, [NativeTypeName("WriteCallback *")] Callback_c_void__WriteData* out_fail)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_iter(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, inp, @out, out_fail);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_iter(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, inp, @out, out_fail);
 
             return __ret;
         }
@@ -2937,7 +2963,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_write_raw_list(void* self, [NativeTypeName("struct CSliceRef_WriteData")] CSliceRef_WriteData data)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_raw_list(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_raw_list(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -2945,7 +2971,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_write_raw(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 data)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_raw(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, addr, data);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_raw(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, addr, data);
 
             return __ret;
         }
@@ -2959,7 +2985,15 @@ namespace memflowNET.Interop
         [return: NativeTypeName("struct ProcessState")]
         public static ProcessState mf_processinstance_state(void* self)
         {
-            ProcessState __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->state(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            ProcessState __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->state(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container);
+
+            return __ret;
+        }
+
+        [return: NativeTypeName("int32_t")]
+        public static int mf_processinstance_set_dtb(void* self, [NativeTypeName("Address")] ulong dtb1, [NativeTypeName("Address")] ulong dtb2)
+        {
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->set_dtb(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, dtb1, dtb2);
 
             return __ret;
         }
@@ -2967,7 +3001,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_address_list_callback(void* self, [NativeTypeName("const struct ArchitectureIdent *")] ArchitectureIdent* target_arch, [NativeTypeName("ModuleAddressCallback")] Callback_c_void__ModuleAddressInfo callback)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_address_list_callback(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, target_arch, callback);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_address_list_callback(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, target_arch, callback);
 
             return __ret;
         }
@@ -2975,7 +3009,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_list_callback(void* self, [NativeTypeName("const struct ArchitectureIdent *")] ArchitectureIdent* target_arch, [NativeTypeName("ModuleInfoCallback")] Callback_c_void__ModuleInfo callback)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_list_callback(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, target_arch, callback);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_list_callback(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, target_arch, callback);
 
             return __ret;
         }
@@ -2983,7 +3017,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_by_address(void* self, [NativeTypeName("Address")] ulong address, [NativeTypeName("struct ArchitectureIdent")] ArchitectureIdent architecture, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_by_address(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, address, architecture, ok_out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_by_address(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, address, architecture, ok_out);
 
             return __ret;
         }
@@ -2991,7 +3025,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_by_name_arch(void* self, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("const struct ArchitectureIdent *")] ArchitectureIdent* architecture, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_by_name_arch(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, name, architecture, ok_out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_by_name_arch(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, name, architecture, ok_out);
 
             return __ret;
         }
@@ -2999,7 +3033,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_by_name(void* self, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_by_name(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, name, ok_out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_by_name(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, name, ok_out);
 
             return __ret;
         }
@@ -3007,7 +3041,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_primary_module_address(void* self, [NativeTypeName("Address *")] ulong* ok_out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->primary_module_address(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, ok_out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->primary_module_address(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, ok_out);
 
             return __ret;
         }
@@ -3015,7 +3049,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_primary_module(void* self, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->primary_module(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, ok_out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->primary_module(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, ok_out);
 
             return __ret;
         }
@@ -3023,7 +3057,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_import_list_callback(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("ImportCallback")] Callback_c_void__ImportInfo callback)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_import_list_callback(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, callback);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_import_list_callback(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, callback);
 
             return __ret;
         }
@@ -3031,7 +3065,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_export_list_callback(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("ExportCallback")] Callback_c_void__ExportInfo callback)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_export_list_callback(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, callback);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_export_list_callback(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, callback);
 
             return __ret;
         }
@@ -3039,7 +3073,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_section_list_callback(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("SectionCallback")] Callback_c_void__SectionInfo callback)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_section_list_callback(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, callback);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_section_list_callback(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, callback);
 
             return __ret;
         }
@@ -3047,7 +3081,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_import_by_name(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ImportInfo *")] ImportInfo* ok_out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_import_by_name(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, name, ok_out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_import_by_name(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, name, ok_out);
 
             return __ret;
         }
@@ -3055,7 +3089,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_export_by_name(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ExportInfo *")] ExportInfo* ok_out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_export_by_name(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, name, ok_out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_export_by_name(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, name, ok_out);
 
             return __ret;
         }
@@ -3063,7 +3097,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_module_section_by_name(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct SectionInfo *")] SectionInfo* ok_out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_section_by_name(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, name, ok_out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_section_by_name(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, name, ok_out);
 
             return __ret;
         }
@@ -3071,45 +3105,45 @@ namespace memflowNET.Interop
         [return: NativeTypeName("const struct ProcessInfo *")]
         public static ProcessInfo* mf_processinstance_info([NativeTypeName("const void *")] void* self)
         {
-            ProcessInfo* __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->info(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            ProcessInfo* __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->info(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container);
 
             return __ret;
         }
 
         public static void mf_processinstance_mapped_mem_range(void* self, [NativeTypeName("imem")] long gap_size, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("MemoryRangeCallback")] Callback_c_void__MemoryRange @out)
         {
-            ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->mapped_mem_range(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, gap_size, start, end, @out);
+            (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->mapped_mem_range(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, gap_size, start, end, @out);
         }
 
         public static void mf_processinstance_mapped_mem(void* self, [NativeTypeName("imem")] long gap_size, [NativeTypeName("MemoryRangeCallback")] Callback_c_void__MemoryRange @out)
         {
-            ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->mapped_mem(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, gap_size, @out);
+            (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->mapped_mem(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, gap_size, @out);
         }
 
         public static void mf_processinstance_virt_to_phys_list(void* self, [NativeTypeName("struct CSliceRef_VtopRange")] CSliceRef_VtopRange addrs, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out, [NativeTypeName("VirtualTranslationFailCallback")] Callback_c_void__VirtualTranslationFail out_fail)
         {
-            ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_to_phys_list(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, addrs, @out, out_fail);
+            (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_to_phys_list(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, addrs, @out, out_fail);
         }
 
         public static void mf_processinstance_virt_to_phys_range(void* self, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out)
         {
-            ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_to_phys_range(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, start, end, @out);
+            (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_to_phys_range(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, start, end, @out);
         }
 
         public static void mf_processinstance_virt_translation_map_range(void* self, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out)
         {
-            ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_translation_map_range(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, start, end, @out);
+            (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_translation_map_range(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, start, end, @out);
         }
 
         public static void mf_processinstance_virt_page_map_range(void* self, [NativeTypeName("imem")] long gap_size, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("MemoryRangeCallback")] Callback_c_void__MemoryRange @out)
         {
-            ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_page_map_range(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, gap_size, start, end, @out);
+            (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_page_map_range(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, gap_size, start, end, @out);
         }
 
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_virt_to_phys(void* self, [NativeTypeName("Address")] ulong address, [NativeTypeName("struct PhysicalAddress *")] PhysicalAddress* ok_out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_to_phys(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, address, ok_out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_to_phys(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, address, ok_out);
 
             return __ret;
         }
@@ -3117,27 +3151,27 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_processinstance_virt_page_info(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct Page *")] Page* ok_out)
         {
-            int __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_page_info(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, addr, ok_out);
+            int __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_page_info(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, addr, ok_out);
 
             return __ret;
         }
 
         public static void mf_processinstance_virt_translation_map(void* self, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out)
         {
-            ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_translation_map(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, @out);
+            (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_translation_map(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, @out);
         }
 
         [return: NativeTypeName("struct COption_Address")]
         public static COption_Address mf_processinstance_phys_to_virt(void* self, [NativeTypeName("Address")] ulong phys)
         {
-            COption_Address __ret = ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->phys_to_virt(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, phys);
+            COption_Address __ret = (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->phys_to_virt(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, phys);
 
             return __ret;
         }
 
         public static void mf_processinstance_virt_page_map(void* self, [NativeTypeName("imem")] long gap_size, [NativeTypeName("MemoryRangeCallback")] Callback_c_void__MemoryRange @out)
         {
-            ((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_page_map(&((ProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, gap_size, @out);
+            (((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_page_map(&((ProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, gap_size, @out);
         }
 
         [return: NativeTypeName("struct IntoProcessInstance_CBox_c_void_____CArc_c_void")]
@@ -3145,7 +3179,7 @@ namespace memflowNET.Interop
         {
             IntoProcessInstance_CBox_c_void_____CArc_c_void __ret = new IntoProcessInstance_CBox_c_void_____CArc_c_void();
 
-            __ret.container=(((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_clone->clone(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container));
+            __ret.container = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_clone)->clone(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container);
             return __ret;
         }
 
@@ -3158,7 +3192,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_read_raw_iter(void* self, [NativeTypeName("ReadRawMemOps")] MemOps_ReadDataRaw__ReadData data)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_raw_iter(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_raw_iter(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -3166,7 +3200,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_write_raw_iter(void* self, [NativeTypeName("WriteRawMemOps")] MemOps_WriteDataRaw__WriteData data)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_raw_iter(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_raw_iter(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -3174,7 +3208,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("struct MemoryViewMetadata")]
         public static MemoryViewMetadata mf_intoprocessinstance_metadata([NativeTypeName("const void *")] void* self)
         {
-            MemoryViewMetadata __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->metadata(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            MemoryViewMetadata __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->metadata(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container);
 
             return __ret;
         }
@@ -3182,7 +3216,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_read_iter(void* self, [NativeTypeName("struct CIterator_ReadData")] CIterator_ReadData inp, [NativeTypeName("ReadCallback *")] Callback_c_void__ReadData* @out, [NativeTypeName("ReadCallback *")] Callback_c_void__ReadData* out_fail)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_iter(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, inp, @out, out_fail);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_iter(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, inp, @out, out_fail);
 
             return __ret;
         }
@@ -3190,7 +3224,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_read_raw_list(void* self, [NativeTypeName("struct CSliceMut_ReadData")] CSliceMut_ReadData data)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_raw_list(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_raw_list(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -3198,7 +3232,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_read_raw_into(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct CSliceMut_u8")] CSliceMut_u8 @out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->read_raw_into(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, addr, @out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->read_raw_into(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, addr, @out);
 
             return __ret;
         }
@@ -3206,7 +3240,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_write_iter(void* self, [NativeTypeName("struct CIterator_WriteData")] CIterator_WriteData inp, [NativeTypeName("WriteCallback *")] Callback_c_void__WriteData* @out, [NativeTypeName("WriteCallback *")] Callback_c_void__WriteData* out_fail)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_iter(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, inp, @out, out_fail);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_iter(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, inp, @out, out_fail);
 
             return __ret;
         }
@@ -3214,7 +3248,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_write_raw_list(void* self, [NativeTypeName("struct CSliceRef_WriteData")] CSliceRef_WriteData data)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_raw_list(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_raw_list(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -3222,7 +3256,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_write_raw(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 data)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_memoryview->write_raw(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, addr, data);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_memoryview)->write_raw(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, addr, data);
 
             return __ret;
         }
@@ -3230,7 +3264,15 @@ namespace memflowNET.Interop
         [return: NativeTypeName("struct ProcessState")]
         public static ProcessState mf_intoprocessinstance_state(void* self)
         {
-            ProcessState __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->state(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            ProcessState __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->state(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container);
+
+            return __ret;
+        }
+
+        [return: NativeTypeName("int32_t")]
+        public static int mf_intoprocessinstance_set_dtb(void* self, [NativeTypeName("Address")] ulong dtb1, [NativeTypeName("Address")] ulong dtb2)
+        {
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->set_dtb(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, dtb1, dtb2);
 
             return __ret;
         }
@@ -3238,7 +3280,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_address_list_callback(void* self, [NativeTypeName("const struct ArchitectureIdent *")] ArchitectureIdent* target_arch, [NativeTypeName("ModuleAddressCallback")] Callback_c_void__ModuleAddressInfo callback)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_address_list_callback(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, target_arch, callback);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_address_list_callback(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, target_arch, callback);
 
             return __ret;
         }
@@ -3246,7 +3288,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_list_callback(void* self, [NativeTypeName("const struct ArchitectureIdent *")] ArchitectureIdent* target_arch, [NativeTypeName("ModuleInfoCallback")] Callback_c_void__ModuleInfo callback)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_list_callback(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, target_arch, callback);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_list_callback(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, target_arch, callback);
 
             return __ret;
         }
@@ -3254,7 +3296,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_by_address(void* self, [NativeTypeName("Address")] ulong address, [NativeTypeName("struct ArchitectureIdent")] ArchitectureIdent architecture, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_by_address(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, address, architecture, ok_out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_by_address(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, address, architecture, ok_out);
 
             return __ret;
         }
@@ -3262,7 +3304,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_by_name_arch(void* self, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("const struct ArchitectureIdent *")] ArchitectureIdent* architecture, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_by_name_arch(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, name, architecture, ok_out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_by_name_arch(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, name, architecture, ok_out);
 
             return __ret;
         }
@@ -3270,7 +3312,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_by_name(void* self, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_by_name(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, name, ok_out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_by_name(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, name, ok_out);
 
             return __ret;
         }
@@ -3278,7 +3320,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_primary_module_address(void* self, [NativeTypeName("Address *")] ulong* ok_out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->primary_module_address(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, ok_out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->primary_module_address(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, ok_out);
 
             return __ret;
         }
@@ -3286,7 +3328,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_primary_module(void* self, [NativeTypeName("struct ModuleInfo *")] ModuleInfo* ok_out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->primary_module(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, ok_out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->primary_module(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, ok_out);
 
             return __ret;
         }
@@ -3294,7 +3336,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_import_list_callback(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("ImportCallback")] Callback_c_void__ImportInfo callback)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_import_list_callback(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, callback);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_import_list_callback(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, callback);
 
             return __ret;
         }
@@ -3302,7 +3344,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_export_list_callback(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("ExportCallback")] Callback_c_void__ExportInfo callback)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_export_list_callback(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, callback);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_export_list_callback(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, callback);
 
             return __ret;
         }
@@ -3310,7 +3352,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_section_list_callback(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("SectionCallback")] Callback_c_void__SectionInfo callback)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_section_list_callback(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, callback);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_section_list_callback(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, callback);
 
             return __ret;
         }
@@ -3318,7 +3360,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_import_by_name(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ImportInfo *")] ImportInfo* ok_out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_import_by_name(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, name, ok_out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_import_by_name(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, name, ok_out);
 
             return __ret;
         }
@@ -3326,7 +3368,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_export_by_name(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct ExportInfo *")] ExportInfo* ok_out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_export_by_name(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, name, ok_out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_export_by_name(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, name, ok_out);
 
             return __ret;
         }
@@ -3334,7 +3376,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_module_section_by_name(void* self, [NativeTypeName("const struct ModuleInfo *")] ModuleInfo* info, [NativeTypeName("struct CSliceRef_u8")] CSliceRef_u8 name, [NativeTypeName("struct SectionInfo *")] SectionInfo* ok_out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->module_section_by_name(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, info, name, ok_out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->module_section_by_name(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, info, name, ok_out);
 
             return __ret;
         }
@@ -3342,45 +3384,45 @@ namespace memflowNET.Interop
         [return: NativeTypeName("const struct ProcessInfo *")]
         public static ProcessInfo* mf_intoprocessinstance_info([NativeTypeName("const void *")] void* self)
         {
-            ProcessInfo* __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->info(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            ProcessInfo* __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->info(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container);
 
             return __ret;
         }
 
         public static void mf_intoprocessinstance_mapped_mem_range(void* self, [NativeTypeName("imem")] long gap_size, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("MemoryRangeCallback")] Callback_c_void__MemoryRange @out)
         {
-            ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->mapped_mem_range(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, gap_size, start, end, @out);
+            (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->mapped_mem_range(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, gap_size, start, end, @out);
         }
 
         public static void mf_intoprocessinstance_mapped_mem(void* self, [NativeTypeName("imem")] long gap_size, [NativeTypeName("MemoryRangeCallback")] Callback_c_void__MemoryRange @out)
         {
-            ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_process->mapped_mem(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, gap_size, @out);
+            (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_process)->mapped_mem(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, gap_size, @out);
         }
 
         public static void mf_intoprocessinstance_virt_to_phys_list(void* self, [NativeTypeName("struct CSliceRef_VtopRange")] CSliceRef_VtopRange addrs, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out, [NativeTypeName("VirtualTranslationFailCallback")] Callback_c_void__VirtualTranslationFail out_fail)
         {
-            ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_to_phys_list(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, addrs, @out, out_fail);
+            (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_to_phys_list(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, addrs, @out, out_fail);
         }
 
         public static void mf_intoprocessinstance_virt_to_phys_range(void* self, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out)
         {
-            ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_to_phys_range(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, start, end, @out);
+            (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_to_phys_range(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, start, end, @out);
         }
 
         public static void mf_intoprocessinstance_virt_translation_map_range(void* self, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out)
         {
-            ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_translation_map_range(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, start, end, @out);
+            (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_translation_map_range(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, start, end, @out);
         }
 
         public static void mf_intoprocessinstance_virt_page_map_range(void* self, [NativeTypeName("imem")] long gap_size, [NativeTypeName("Address")] ulong start, [NativeTypeName("Address")] ulong end, [NativeTypeName("MemoryRangeCallback")] Callback_c_void__MemoryRange @out)
         {
-            ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_page_map_range(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, gap_size, start, end, @out);
+            (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_page_map_range(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, gap_size, start, end, @out);
         }
 
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_virt_to_phys(void* self, [NativeTypeName("Address")] ulong address, [NativeTypeName("struct PhysicalAddress *")] PhysicalAddress* ok_out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_to_phys(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, address, ok_out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_to_phys(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, address, ok_out);
 
             return __ret;
         }
@@ -3388,33 +3430,33 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_intoprocessinstance_virt_page_info(void* self, [NativeTypeName("Address")] ulong addr, [NativeTypeName("struct Page *")] Page* ok_out)
         {
-            int __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_page_info(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, addr, ok_out);
+            int __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_page_info(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, addr, ok_out);
 
             return __ret;
         }
 
         public static void mf_intoprocessinstance_virt_translation_map(void* self, [NativeTypeName("VirtualTranslationCallback")] Callback_c_void__VirtualTranslation @out)
         {
-            ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_translation_map(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, @out);
+            (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_translation_map(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, @out);
         }
 
         [return: NativeTypeName("struct COption_Address")]
         public static COption_Address mf_intoprocessinstance_phys_to_virt(void* self, [NativeTypeName("Address")] ulong phys)
         {
-            COption_Address __ret = ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->phys_to_virt(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, phys);
+            COption_Address __ret = (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->phys_to_virt(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, phys);
 
             return __ret;
         }
 
         public static void mf_intoprocessinstance_virt_page_map(void* self, [NativeTypeName("imem")] long gap_size, [NativeTypeName("MemoryRangeCallback")] Callback_c_void__MemoryRange @out)
         {
-            ((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_virtualtranslate->virt_page_map(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)self)->container, gap_size, @out);
+            (((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_virtualtranslate)->virt_page_map(&((IntoProcessInstance_CBox_c_void_____CArc_c_void*)(self))->container, gap_size, @out);
         }
 
         [return: NativeTypeName("int32_t")]
         public static int mf_connectorinstance_phys_read_raw_iter(void* self, [NativeTypeName("PhysicalReadMemOps")] MemOps_PhysicalReadData__ReadData data)
         {
-            int __ret = ((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_physicalmemory->phys_read_raw_iter(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_physicalmemory)->phys_read_raw_iter(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -3422,7 +3464,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("int32_t")]
         public static int mf_connectorinstance_phys_write_raw_iter(void* self, [NativeTypeName("PhysicalWriteMemOps")] MemOps_PhysicalWriteData__WriteData data)
         {
-            int __ret = ((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_physicalmemory->phys_write_raw_iter(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->container, data);
+            int __ret = (((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_physicalmemory)->phys_write_raw_iter(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->container, data);
 
             return __ret;
         }
@@ -3430,14 +3472,14 @@ namespace memflowNET.Interop
         [return: NativeTypeName("struct PhysicalMemoryMetadata")]
         public static PhysicalMemoryMetadata mf_connectorinstance_metadata([NativeTypeName("const void *")] void* self)
         {
-            PhysicalMemoryMetadata __ret = ((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_physicalmemory->metadata(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            PhysicalMemoryMetadata __ret = (((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_physicalmemory)->metadata(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->container);
 
             return __ret;
         }
 
         public static void mf_connectorinstance_set_mem_map(void* self, [NativeTypeName("struct CSliceRef_PhysicalMemoryMapping")] CSliceRef_PhysicalMemoryMapping _mem_map)
         {
-            ((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_physicalmemory->set_mem_map(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->container, _mem_map);
+            (((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_physicalmemory)->set_mem_map(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->container, _mem_map);
         }
 
         [return: NativeTypeName("MemoryViewBase_CBox_c_void_____CArc_c_void")]
@@ -3453,7 +3495,7 @@ namespace memflowNET.Interop
         [return: NativeTypeName("MemoryViewBase_CBox_c_void_____CArc_c_void")]
         public static CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void mf_connectorinstance_phys_view(void* self)
         {
-            CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void __ret = ((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->vtbl_physicalmemory->phys_view(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)self)->container);
+            CGlueTraitObj_CBox_c_void_____MemoryViewVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____MemoryViewRetTmp_CArc_c_void______________CArc_c_void_____MemoryViewRetTmp_CArc_c_void __ret = (((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->vtbl_physicalmemory)->phys_view(&((ConnectorInstance_CBox_c_void_____CArc_c_void*)(self))->container);
 
             return __ret;
         }
@@ -3462,7 +3504,7 @@ namespace memflowNET.Interop
         {
             if (ctx->size < ctx->capacity)
             {
-                Unsafe.CopyBlockUnaligned(ctx->buf + elem_size * ctx->size++, info, (uint)elem_size);
+                NativeMemory.Copy(info, ctx->buf + elem_size * ctx->size++, elem_size);
             }
 
             return ctx->size < ctx->capacity;
@@ -3470,7 +3512,7 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_dynamic_base([NativeTypeName("struct CollectBase *")] CollectBase* ctx, [NativeTypeName("size_t")] nuint elem_size, void* info)
         {
-            if (ctx->buf == null || ctx->size >= ctx->capacity)
+            if ((ctx->buf == null) || ctx->size >= ctx->capacity)
             {
                 nuint new_capacity = (ctx->buf) != null ? ctx->capacity * 2 : 64;
                 sbyte* buf = (sbyte*)(NativeMemory.Realloc(ctx->buf, elem_size * new_capacity));
@@ -3482,12 +3524,12 @@ namespace memflowNET.Interop
                 }
             }
 
-            if (ctx->buf == null || ctx->size >= ctx->capacity)
+            if ((ctx->buf == null) || ctx->size >= ctx->capacity)
             {
                 return false;
             }
 
-            Unsafe.CopyBlockUnaligned(ctx->buf + elem_size * ctx->size++, info, (uint)elem_size);
+            NativeMemory.Copy(info, ctx->buf + elem_size * ctx->size++, elem_size);
             return true;
         }
 
@@ -3498,18 +3540,18 @@ namespace memflowNET.Interop
                 return (1) != 0;
             }
 
-            Unsafe.CopyBlockUnaligned(@out, iter->buf + iter->i++ * iter->sz_elem, (uint)iter->sz_elem);
+            NativeMemory.Copy(iter->buf + iter->i++ * iter->sz_elem, @out, iter->sz_elem);
             return (0) != 0;
         }
 
         public static bool cb_collect_static_ReadData([NativeTypeName("struct CollectBase *")] CollectBase* ctx, [NativeTypeName("ReadData")] CTup2_Address__CSliceMut_u8 info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(CTup2_Address__CSliceMut_u8), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(CTup2_Address__CSliceMut_u8)), &info);
         }
 
         public static bool cb_collect_dynamic_ReadData([NativeTypeName("struct CollectBase *")] CollectBase* ctx, [NativeTypeName("ReadData")] CTup2_Address__CSliceMut_u8 info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(CTup2_Address__CSliceMut_u8), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(CTup2_Address__CSliceMut_u8)), &info);
         }
 
         public static bool cb_count_ReadData([NativeTypeName("size_t *")] nuint* cnt, [NativeTypeName("ReadData")] CTup2_Address__CSliceMut_u8 info)
@@ -3519,12 +3561,12 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_WriteData([NativeTypeName("struct CollectBase *")] CollectBase* ctx, [NativeTypeName("WriteData")] CTup2_Address__CSliceRef_u8 info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(CTup2_Address__CSliceRef_u8), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(CTup2_Address__CSliceRef_u8)), &info);
         }
 
         public static bool cb_collect_dynamic_WriteData([NativeTypeName("struct CollectBase *")] CollectBase* ctx, [NativeTypeName("WriteData")] CTup2_Address__CSliceRef_u8 info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(CTup2_Address__CSliceRef_u8), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(CTup2_Address__CSliceRef_u8)), &info);
         }
 
         public static bool cb_count_WriteData([NativeTypeName("size_t *")] nuint* cnt, [NativeTypeName("WriteData")] CTup2_Address__CSliceRef_u8 info)
@@ -3534,12 +3576,12 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_Address([NativeTypeName("struct CollectBase *")] CollectBase* ctx, [NativeTypeName("Address")] ulong info)
         {
-            return cb_collect_static_base(ctx, sizeof(ulong), &info);
+            return cb_collect_static_base(ctx, unchecked(sizeof(ulong)), &info);
         }
 
         public static bool cb_collect_dynamic_Address([NativeTypeName("struct CollectBase *")] CollectBase* ctx, [NativeTypeName("Address")] ulong info)
         {
-            return cb_collect_dynamic_base(ctx, sizeof(ulong), &info);
+            return cb_collect_dynamic_base(ctx, unchecked(sizeof(ulong)), &info);
         }
 
         public static bool cb_count_Address([NativeTypeName("size_t *")] nuint* cnt, [NativeTypeName("Address")] ulong info)
@@ -3549,12 +3591,12 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_ProcessInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, ProcessInfo info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(ProcessInfo), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(ProcessInfo)), &info);
         }
 
         public static bool cb_collect_dynamic_ProcessInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, ProcessInfo info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(ProcessInfo), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(ProcessInfo)), &info);
         }
 
         public static bool cb_count_ProcessInfo([NativeTypeName("size_t *")] nuint* cnt, ProcessInfo info)
@@ -3564,12 +3606,12 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_ModuleAddressInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, ModuleAddressInfo info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(ModuleAddressInfo), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(ModuleAddressInfo)), &info);
         }
 
         public static bool cb_collect_dynamic_ModuleAddressInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, ModuleAddressInfo info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(ModuleAddressInfo), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(ModuleAddressInfo)), &info);
         }
 
         public static bool cb_count_ModuleAddressInfo([NativeTypeName("size_t *")] nuint* cnt, ModuleAddressInfo info)
@@ -3579,12 +3621,12 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_ModuleInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, ModuleInfo info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(ModuleInfo), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(ModuleInfo)), &info);
         }
 
         public static bool cb_collect_dynamic_ModuleInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, ModuleInfo info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(ModuleInfo), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(ModuleInfo)), &info);
         }
 
         public static bool cb_count_ModuleInfo([NativeTypeName("size_t *")] nuint* cnt, ModuleInfo info)
@@ -3594,12 +3636,12 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_ImportInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, ImportInfo info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(ImportInfo), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(ImportInfo)), &info);
         }
 
         public static bool cb_collect_dynamic_ImportInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, ImportInfo info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(ImportInfo), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(ImportInfo)), &info);
         }
 
         public static bool cb_count_ImportInfo([NativeTypeName("size_t *")] nuint* cnt, ImportInfo info)
@@ -3609,12 +3651,12 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_ExportInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, ExportInfo info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(ExportInfo), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(ExportInfo)), &info);
         }
 
         public static bool cb_collect_dynamic_ExportInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, ExportInfo info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(ExportInfo), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(ExportInfo)), &info);
         }
 
         public static bool cb_count_ExportInfo([NativeTypeName("size_t *")] nuint* cnt, ExportInfo info)
@@ -3624,12 +3666,12 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_SectionInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, SectionInfo info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(SectionInfo), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(SectionInfo)), &info);
         }
 
         public static bool cb_collect_dynamic_SectionInfo([NativeTypeName("struct CollectBase *")] CollectBase* ctx, SectionInfo info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(SectionInfo), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(SectionInfo)), &info);
         }
 
         public static bool cb_count_SectionInfo([NativeTypeName("size_t *")] nuint* cnt, SectionInfo info)
@@ -3639,12 +3681,12 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_MemoryRange([NativeTypeName("struct CollectBase *")] CollectBase* ctx, [NativeTypeName("MemoryRange")] CTup3_Address__umem__PageType info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(CTup3_Address__umem__PageType), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(CTup3_Address__umem__PageType)), &info);
         }
 
         public static bool cb_collect_dynamic_MemoryRange([NativeTypeName("struct CollectBase *")] CollectBase* ctx, [NativeTypeName("MemoryRange")] CTup3_Address__umem__PageType info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(CTup3_Address__umem__PageType), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(CTup3_Address__umem__PageType)), &info);
         }
 
         public static bool cb_count_MemoryRange([NativeTypeName("size_t *")] nuint* cnt, [NativeTypeName("MemoryRange")] CTup3_Address__umem__PageType info)
@@ -3654,12 +3696,12 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_VirtualTranslation([NativeTypeName("struct CollectBase *")] CollectBase* ctx, VirtualTranslation info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(VirtualTranslation), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(VirtualTranslation)), &info);
         }
 
         public static bool cb_collect_dynamic_VirtualTranslation([NativeTypeName("struct CollectBase *")] CollectBase* ctx, VirtualTranslation info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(VirtualTranslation), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(VirtualTranslation)), &info);
         }
 
         public static bool cb_count_VirtualTranslation([NativeTypeName("size_t *")] nuint* cnt, VirtualTranslation info)
@@ -3669,18 +3711,24 @@ namespace memflowNET.Interop
 
         public static bool cb_collect_static_VirtualTranslationFail([NativeTypeName("struct CollectBase *")] CollectBase* ctx, VirtualTranslationFail info)
         {
-            return cb_collect_static_base(ctx, (uint)sizeof(VirtualTranslationFail), &info);
+            return cb_collect_static_base(ctx, unchecked((uint)sizeof(VirtualTranslationFail)), &info);
         }
 
         public static bool cb_collect_dynamic_VirtualTranslationFail([NativeTypeName("struct CollectBase *")] CollectBase* ctx, VirtualTranslationFail info)
         {
-            return cb_collect_dynamic_base(ctx, (uint)sizeof(VirtualTranslationFail), &info);
+            return cb_collect_dynamic_base(ctx, unchecked((uint)sizeof(VirtualTranslationFail)), &info);
         }
 
         public static bool cb_count_VirtualTranslationFail([NativeTypeName("size_t *")] nuint* cnt, VirtualTranslationFail info)
         {
             return (++(*cnt)) != 0;
         }
+
+        [NativeTypeName("#define Address_NULL 0")]
+        public const int Address_NULL = 0;
+
+        [NativeTypeName("#define Address_INVALID ~0")]
+        public const int Address_INVALID = ~0;
 
         [NativeTypeName("#define PageType_NONE 0")]
         public const int PageType_NONE = 0;
@@ -3699,5 +3747,21 @@ namespace memflowNET.Interop
 
         [NativeTypeName("#define PageType_NOEXEC 16")]
         public const int PageType_NOEXEC = 16;
+
+        [NativeTypeName("#define PhysicalAddress_INVALID (PhysicalAddress){ .address = Address_INVALID, .page_type = PageType_UNKNOWN, .page_size_log2 = 0 }")]
+        public static readonly PhysicalAddress PhysicalAddress_INVALID = new PhysicalAddress()
+        { 
+            address = ulong.MaxValue, 
+            page_type = PageType_UNKNOWN, 
+            page_size_log2 = 0
+        };
+
+        [NativeTypeName("#define Page_INVALID (Page){ .page_type = PageType_UNKNOWN, .page_base = Address_INVALID, .page_size = 0 }")]
+        public static readonly Page Page_INVALID = new Page()
+        {
+            page_type = PageType_UNKNOWN, 
+            page_base = ulong.MaxValue, 
+            page_size = 0
+        };
     }
 }

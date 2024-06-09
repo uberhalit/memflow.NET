@@ -1,5 +1,5 @@
 # memflow.NET
-A C# (.NET 6) wrapper for the [memflow-ffi](https://github.com/memflow/memflow/tree/main/memflow-ffi) crate >= 0.2.0.
+A C# (.NET 8) wrapper for the [memflow-ffi](https://github.com/memflow/memflow/tree/main/memflow-ffi) crate >= 0.2.0.
 
 ## Installation
 Compile the `libmemflow_ffi` library (see [Compiling the interopt library](#Compiling-the-interopt-library)) for your distro/OS and copy into the [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/tree/main/memflow.NET/memflow.NET) folder. Then copy the entire [memflow.NET/memflow.NET](https://github.com/uberhalit/memflow.NET/tree/main/memflow.NET/memflow.NET) folder with its 2 class files and the freshly built library to your project root. 
@@ -13,9 +13,9 @@ using memflowNET.Interop;
 See [Example.cs](https://github.com/uberhalit/memflow.NET/blob/main/memflow.NET/Example.cs) for a short demo or [memflowNET.cs](https://github.com/uberhalit/memflow.NET/blob/main/memflow.NET/memflow.NET/memflowNET.cs) for the raw interop.
 
 ## Compiling the interopt library
-Build the [memflow-ffi](https://github.com/memflow/memflow/tree/main/memflow-ffi) library:
+Build the correct version of [memflow-ffi](https://github.com/memflow/memflow/tree/main/memflow-ffi) library:
 ```
-git clone https://github.com/memflow/memflow.git
+git clone https://github.com/memflow/memflow.git --depth 1 --branch 0.2.X
 cd memflow
 cargo build --release --all-features --workspace
 ```
@@ -47,10 +47,10 @@ To re-generate the bindings we use [ClangSharp](https://github.com/microsoft/Cla
 git clone https://github.com/microsoft/ClangSharp.git
 cd ClangSharp
 dotnet build -c Release
-cd \artifacts\bin\sources\ClangSharpPInvokeGenerator\Release\net6.0\
+cd \artifacts\bin\sources\ClangSharpPInvokeGenerator\Release\net8.0\
 ```
 
-Get the latest [ffi header file](https://github.com/memflow/memflow/blob/main/memflow-ffi/memflow.h) and place it in that folder. Execute following to generate the wrapper:
+Get the matching [ffi header file](https://github.com/memflow/memflow/blob/main/memflow-ffi/memflow.h) version to your `libmemflow_ffi` library and place it in that folder. Execute following to generate the wrapper:
 
 ```
 .\ClangSharpPInvokeGenerator.exe -f memflow.h -n memflowNET.Interop -o memflowInterop.cs -l libmemflow_ffi -c preview-codegen unix-types generate-aggressive-inlining generate-macro-bindings
@@ -65,6 +65,7 @@ If there are any remaining errors you can try to fix them manually or adjust the
 * Change `nuint` to `uint` whenever the former causes a problem
 * Add explicit casts to `uint` whenever neccessary
 * Fix `void*` casts on helper methods
+* Fix empty definitions for `PhysicalAddress_INVALID` and `Page_INVALID`
 * Some structs require manual layouting through `[StructLayout(LayoutKind.Explicit)]`:
     * ProcessInfo
 
@@ -78,8 +79,8 @@ cd memflow-kvm
 ./install.sh
 cp target/release/libmemflow_kvm.so /usr/lib/memflow/libmemflow_kvm.so
 
-wget https://github.com/memflow/memflow-kvm/releases/download/v0.1.5/memflow-dkms_0.1.5_all.deb
-dpkg -i memflow-dkms_0.1.5_all.deb
+wget https://github.com/memflow/memflow-kvm/releases/download/v0.2.0/memflow-dkms_0.1.7_all.deb
+dpkg -i memflow-dkms_0.1.7_all.deb
 modprobe memflow
 echo memflow >> /etc/modules-load.d/modules.conf
 ```

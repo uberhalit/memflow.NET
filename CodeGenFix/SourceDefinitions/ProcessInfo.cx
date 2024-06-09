@@ -1,4 +1,4 @@
-    [StructLayout(LayoutKind.Explicit, Size = 56)]
+    [StructLayout(LayoutKind.Explicit, Size = 72)]
     public unsafe partial struct ProcessInfo
     {
         [FieldOffset(0)]
@@ -32,4 +32,12 @@
         [FieldOffset(52)]
         [NativeTypeName("struct ArchitectureIdent")]
         public ArchitectureIdent proc_arch;
+		
+		[FieldOffset(56)]
+        [NativeTypeName("Address")]
+        public ulong dtb1;
+		
+		[FieldOffset(64)]
+        [NativeTypeName("Address")]
+        public ulong dtb2;
     }

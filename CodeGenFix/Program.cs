@@ -20,7 +20,7 @@ namespace CodeGenFix
             Console.Title = "CodeGenFix";
 
             // get interop file
-            string filePath = Path.Combine(Path.Combine(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "..", "..", "..", "..", ".."), "memflow.NET", "memflow.NET"), "memflowInterop.cs");
+            string filePath = Path.Combine(Path.Combine(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "..", "..", "..", "..", "..", ".."), "memflow.NET", "memflow.NET"), "memflowInterop.cs");
             if (args.Length == 1)
                 filePath = args[0];
             Console.WriteLine($"Trying to parse '{filePath}'");
@@ -67,10 +67,10 @@ namespace CodeGenFix
                             // NativeTypeName and NativeTypeNameAttribute get inserted by ClangSharp but have to be manually defined
                             case "CS0246":
                                 // find all usings directives
-                                var Usings = parsedNodes.Where(x => x.Kind() == SyntaxKind.UsingDirective);
+                                var Usings = parsedNodes.Where(x => x.IsKind(SyntaxKind.UsingDirective));
 
                                 // find namespace line
-                                var NameSpace = parsedNodes.First(x => x.Kind() == SyntaxKind.NamespaceDeclaration);
+                                var NameSpace = parsedNodes.First(x => x.IsKind(SyntaxKind.NamespaceDeclaration));
                                 int line = NameSpace.GetLocation().GetLineSpan().StartLinePosition.Line + 2;
 
                                 if (errMsg.Contains("NativeTypeNameAttribute") || errMsg.Contains("NativeTypeName"))
@@ -106,6 +106,7 @@ namespace CodeGenFix
 
                             // Invalid expression term 'character'
                             // Clangsharp breaks some regular '=' operators and generates '.operator=' directives
+                            // Clangsharp gets thrown off on some defined fields
                             case "CS1001":
                             case "CS1002":
                             case "CS1513":
@@ -116,6 +117,25 @@ namespace CodeGenFix
                             case "CS1525":
                                 if (errLine.Contains(".operator="))
                                     newSrcTextLines[errLineNo] = errLine.Replace(".operator=", "=");
+                                else if (errLine.Contains(";") && (errLine.Contains("PhysicalAddress_INVALID") || errLine.Contains("Page_INVALID")))
+                                {
+                                    if (errLine.Contains("PhysicalAddress_INVALID"))
+                                    {
+                                        // insert PhysicalAddress_INVALID definition
+                                        List<string> def = File.ReadAllLines(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "SourceDefinitions", "PhysicalAddress_INVALID.cx")).ToList();
+                                        newSrcTextLines[errLineNo] = def[0];
+                                        newSrcTextLines.InsertRange(errLineNo + 1, def[1..]);
+                                        goto Recompile;
+                                    }
+                                    else
+                                    {
+                                        // insert Page_INVALID definition
+                                        List<string> def = File.ReadAllLines(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "SourceDefinitions", "Page_INVALID.cx")).ToList();
+                                        newSrcTextLines[errLineNo] = def[0];
+                                        newSrcTextLines.InsertRange(errLineNo + 1, def[1..]);
+                                        goto Recompile;
+                                    }
+                                }
                                 else
                                     goto ThrowError;
                                 break;
@@ -194,7 +214,7 @@ namespace CodeGenFix
                 continue;
             FixStructs:
                 // replace lazy typed structs with explicit ones
-                var Structs = parsedNodes.Where(x => x.Kind() == SyntaxKind.StructDeclaration);
+                var Structs = parsedNodes.Where(x => x.IsKind(SyntaxKind.StructDeclaration));
 
                 // ProcessInfo
                 if (Structs.Any(x => x.ToString().Contains("struct ProcessInfo")))
@@ -224,36 +244,36 @@ namespace CodeGenFix
                 CppCompilation parsedHeader = CppParser.ParseFile(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "SourceDefinitions", "memflow.h"));
 
                 // enums
-                var Enums = parsedNodes.Where(x => x.Kind() == SyntaxKind.EnumDeclaration);
+                var Enums = parsedNodes.Where(x => x.IsKind(SyntaxKind.EnumDeclaration));
                 foreach (CppEnum cDef in parsedHeader.Enums)
                 {
                     if (cDef.TypeKind == CppTypeKind.Enum && cDef.Comment != null)
                     {
                         // find C# definition
-                        SyntaxNode? csDef = Enums.FirstOrDefault(x => x.ChildTokens().FirstOrDefault(y => y.Kind() == SyntaxKind.IdentifierToken).Text.Equals(cDef.Name, StringComparison.OrdinalIgnoreCase));
+                        SyntaxNode? csDef = Enums.FirstOrDefault(x => x.ChildTokens().FirstOrDefault(y => y.IsKind(SyntaxKind.IdentifierToken)).Text.Equals(cDef.Name, StringComparison.OrdinalIgnoreCase));
                         InsertCppComment(csDef, cDef.Comment, ref lineIndex, ref newSrcTextLines);
                     }
                 }
 
                 // structs
-                Structs = parsedNodes.Where(x => x.Kind() == SyntaxKind.StructDeclaration);
+                Structs = parsedNodes.Where(x => x.IsKind(SyntaxKind.StructDeclaration));
                 foreach (CppClass cDef in parsedHeader.Classes)
                 {
                     if (cDef.TypeKind == CppTypeKind.StructOrClass && cDef.Comment != null)
                     {
                         // find C# definition
-                        SyntaxNode? csDef = Structs.FirstOrDefault(x => x.ChildTokens().FirstOrDefault(y => y.Kind() == SyntaxKind.IdentifierToken).Text.Equals(cDef.Name, StringComparison.OrdinalIgnoreCase));
+                        SyntaxNode? csDef = Structs.FirstOrDefault(x => x.ChildTokens().FirstOrDefault(y => y.IsKind(SyntaxKind.IdentifierToken)).Text.Equals(cDef.Name, StringComparison.OrdinalIgnoreCase));
                         InsertCppComment(csDef, cDef.Comment, ref lineIndex, ref newSrcTextLines);
                     }
                 }
 
                 // functions
-                var Classes = parsedNodes.Where(x => x.Kind() == SyntaxKind.ClassDeclaration);
-                var Functions = Classes.First(x => x.ChildTokens().FirstOrDefault(y => y.Kind() == SyntaxKind.IdentifierToken).Text.Equals("Methods", StringComparison.OrdinalIgnoreCase)).ChildNodes();
+                var Classes = parsedNodes.Where(x => x.IsKind(SyntaxKind.ClassDeclaration));
+                var Functions = Classes.First(x => x.ChildTokens().FirstOrDefault(y => y.IsKind(SyntaxKind.IdentifierToken)).Text.Equals("Methods", StringComparison.OrdinalIgnoreCase)).ChildNodes();
                 foreach (CppFunction cDef in parsedHeader.Functions)
                 {
                     // find C# field definition in Methods struct
-                    SyntaxNode? csDef = Functions.FirstOrDefault(x => x.ChildTokens().FirstOrDefault(y => y.Kind() == SyntaxKind.IdentifierToken).Text.Equals(cDef.Name, StringComparison.OrdinalIgnoreCase));
+                    SyntaxNode? csDef = Functions.FirstOrDefault(x => x.ChildTokens().FirstOrDefault(y => y.IsKind(SyntaxKind.IdentifierToken)).Text.Equals(cDef.Name, StringComparison.OrdinalIgnoreCase));
                     InsertCppComment(csDef, cDef.Comment, ref lineIndex, ref newSrcTextLines, 2);
                 }
 

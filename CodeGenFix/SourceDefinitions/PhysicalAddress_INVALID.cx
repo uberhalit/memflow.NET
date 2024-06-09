@@ -1,0 +1,6 @@
+        public static readonly PhysicalAddress PhysicalAddress_INVALID = new PhysicalAddress()
+        { 
+            address = ulong.MaxValue, 
+            page_type = PageType_UNKNOWN, 
+            page_size_log2 = 0
+        };
