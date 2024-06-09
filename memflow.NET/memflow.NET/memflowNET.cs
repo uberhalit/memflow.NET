@@ -59,7 +59,7 @@ namespace memflowNET
         /// Connects to memflow using the provided connector.
         /// </summary>
         /// <param name="connector">A memflow connector, currently supported are 'kvm', 'qemu' and 'pcileech'.</param>
-        /// <param name="connector">Arguments for memflow connector.</param>
+        /// <param name="connectorArgs">Arguments for memflow connector.</param>
         /// <param name="monitorKeyboard">If the keyboard inside the VM should be monitored for button presses.</param>
         /// <param name="loglevel">The logging level of memflow.</param>
         /// <param name="logging">The logging action that takes a single string as parameter.</param>
@@ -90,7 +90,7 @@ namespace memflowNET
                 PrintLog($"### Inventory initialized: 0x{(IntPtr)this._inventory:X}");
 
             // alloc connector struct
-            this._connector = (ConnectorInstance_CBox_c_void_____CArc_c_void*)Marshal.AllocCoTaskMem(sizeof(ConnectorInstance_CBox_c_void_____CArc_c_void));
+            this._connector = (ConnectorInstance_CBox_c_void_____CArc_c_void*) Marshal.AllocCoTaskMem(sizeof(ConnectorInstance_CBox_c_void_____CArc_c_void));
 
             if (connector == "pcileech" && connectorArgs.ToUpper().Contains("FPGA"))
                 this._IsFpga = true;
@@ -112,7 +112,7 @@ namespace memflowNET
                 PrintLog($"### Connector initialized: 0x{(IntPtr)(*this._connector).container.instance.instance:X}");
 
             // alloc OS Plugin struct
-            this._osPlugin = (OsInstance_CBox_c_void_____CArc_c_void*)Marshal.AllocCoTaskMem(sizeof(OsInstance_CBox_c_void_____CArc_c_void));
+            this._osPlugin = (OsInstance_CBox_c_void_____CArc_c_void*) Marshal.AllocCoTaskMem(sizeof(OsInstance_CBox_c_void_____CArc_c_void));
 
             // initialize the OS plugin
             bName = Array.ConvertAll(Encoding.ASCII.GetBytes("win32\0"), b => unchecked((sbyte)b));
@@ -128,9 +128,14 @@ namespace memflowNET
             if (monitorKeyboard)
             {
                 // alloc keyboard struct
-                this._keyboard = (CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*)Marshal.AllocCoTaskMem(sizeof(CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void));
+                this._keyboard = (CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void*) Marshal.AllocCoTaskMem(sizeof(CGlueTraitObj_CBox_c_void_____KeyboardVtbl_CGlueObjContainer_CBox_c_void_____CArc_c_void_____KeyboardRetTmp_CArc_c_void______________CArc_c_void_____KeyboardRetTmp_CArc_c_void));
                 // initialize keyboard
-                Methods.mf_osinstance_keyboard(this._osPlugin, this._keyboard);
+                int res = Methods.mf_osinstance_keyboard(this._osPlugin, this._keyboard);
+                if (res < 0)
+                {
+                    this._keyboard = null;
+                    PrintLog($"### Failed to initialize keyboard!");
+                }
             }
             else
                 this._keyboard = null;
@@ -168,6 +173,74 @@ namespace memflowNET
                 Methods.mf_inventory_free(this._inventory);
             if (this._loglevel > 2)
                 PrintLog("### Inventory freed");
+        }
+
+        /// <summary>
+        /// Gets a driver' module imported function by name from a process that uses the driver.
+        /// </summary>
+        /// <param name="modulName">The full name of the module.</param>
+        /// <param name="funtionName">The full name of the function.</param>
+        /// <param name="procName">The full name of the process that has the driver loaded.</param>
+        /// <returns>The offset of the imported function, 0 otherwise.</returns>
+        public ulong GetKernelModuleImport(string modulName, string functionName, string procName)
+        {
+            // get kernel module (driver)
+            ModuleInfo moduleInfo = new();
+            byte[] bName = Encoding.ASCII.GetBytes(modulName);
+            fixed (byte* cName = &bName[0]) 
+            {
+                CSliceRef_u8 processSearch = new()
+                {
+                    data = cName,
+                    len = (uint)modulName.Length
+                };
+                if (Interop.Methods.mf_osinstance_module_by_name(this._osPlugin, processSearch, &moduleInfo) != 0)
+                {
+                    if (this._loglevel > 0)
+                        PrintLog($"### Kernel Module '{modulName}' could not be found!");
+                    return 0;
+                }
+            }
+
+            // get process that imports the driver
+            var proc = (ProcessInstance_CBox_c_void_____CArc_c_void*) Marshal.AllocCoTaskMem(sizeof(ProcessInstance_CBox_c_void_____CArc_c_void));
+            if (!procName.ToLower().EndsWith(".exe"))
+                procName += ".exe";
+            bName = Encoding.ASCII.GetBytes(procName);
+            fixed (byte* cName = &bName[0]) 
+            {
+                CSliceRef_u8 processSearch = new()
+                {
+                    data = cName,
+                    len = (uint)procName.Length
+                };
+                if (Interop.Methods.mf_osinstance_process_by_name(this._osPlugin, processSearch, proc) != 0)
+                {
+                    Marshal.FreeCoTaskMem((IntPtr)proc);
+                    if (this._loglevel > 0)
+                        PrintLog($"### Process '{procName}' could not be found!");
+                    return 0;
+                }
+            }
+
+            // get import of said driver from process
+            ImportInfo importInfo = new();
+            bName = Encoding.ASCII.GetBytes(functionName);
+            fixed (byte* cName = &bName[0]) 
+            {
+                CSliceRef_u8 functionSearch = new()
+                {
+                    data = cName,
+                    len = (uint)functionName.Length
+                };
+                if (Interop.Methods.mf_processinstance_module_import_by_name(proc, &moduleInfo, functionSearch, &importInfo) != 0)
+                {
+                    if (this._loglevel > 0)
+                        PrintLog($"### Function Import '{functionName}' could not be found!");
+                    return 0;
+                }
+            }
+            return importInfo.offset;
         }
 
         /// <summary>
@@ -336,6 +409,62 @@ namespace memflowNET
             this.Path = GetCStringFromPtr((*info).path);
             this.Commandline = GetCStringFromPtr((*info).command_line);
 
+            // get main module
+            ModuleInfo mainModule = new();
+            if (Methods.mf_processinstance_primary_module(this._process, &mainModule) != 0)
+            {
+                if (this._loglevel > 0)
+                    PrintLog("### Process main module could not be found!");
+                return;
+            }
+            this.MainModule = new MFprocessmodule(mainModule.@base, (uint)mainModule.size, this.Name);
+            if (this._loglevel > 2)
+                PrintLog($"### Process found: 0x{this.MainModule.BaseAddress:X} | {this.MainModule.Size / 1024} kiB | {this.PId} | {this.Name} | {this.Path}");
+
+            // allocate read/write buffer
+            this._rwBuffer = (byte*)NativeMemory.AllocZeroed(4096);
+
+            this._osPlugin = connection._osPlugin;
+            this.Success = true;
+        }
+        
+        /// <summary>
+        /// Gets a process inside the VM by PId.
+        /// </summary>
+        /// <param name="connection">A fully initialized MFconnection.</param>
+        /// <param name="processId">The processes Id.</param>
+        public unsafe MFprocess(ref MFconnection connection, int processId)
+        {
+            this._loglevel = connection._loglevel;
+            this.PrintLog = connection.PrintLog;
+            if (!connection.Success)
+            {
+                PrintLog("### MFconnection not valid!");
+                return;
+            }
+
+            // alloc process struct
+            this._process = (ProcessInstance_CBox_c_void_____CArc_c_void*) Marshal.AllocCoTaskMem(sizeof(ProcessInstance_CBox_c_void_____CArc_c_void));
+
+            // find a specific process based on its Id
+            if (Methods.mf_osinstance_process_by_pid(connection._osPlugin, (uint)processId, this._process) != 0)
+            {
+                // in some rare cases dropping a failed process struct through memflow will trigger a memory exception so we we have to manually dispose it here for now
+                Marshal.FreeCoTaskMem((IntPtr)this._process);
+                this._process = null;
+                if (this._loglevel > 0)
+                    PrintLog($"### Process Id'{processId}' could not be found!");
+                return;
+            }
+            
+            // get process infos
+            ProcessInfo* info = Methods.mf_processinstance_info(this._process);
+            this.Address = (*info).address;
+            this.PId = (*info).pid;
+            this.Name = GetCStringFromPtr((*info).name);
+            this.Path = GetCStringFromPtr((*info).path);
+            this.Commandline = GetCStringFromPtr((*info).command_line);
+            
             // get main module
             ModuleInfo mainModule = new();
             if (Methods.mf_processinstance_primary_module(this._process, &mainModule) != 0)
@@ -634,12 +763,13 @@ namespace memflowNET
         }
 
         /// <summary>
-        /// Reads an unknown length ASCII string, up to the first terminator, from memory.
+        /// Reads an unknown length string, up to the first terminator, from memory.
         /// </summary>
         /// <param name="address">The virtual address to read from.</param>
+        /// <param name="encoding">The encoding to use when reading.</param>
         /// <param name="length">The maximum length of the string in bytes.</param>
-        /// <returns>The ASCII representation of the data, empty if read was not successful.</returns>
-        public string ReadVariableString(ulong address, uint maxLength = 32)
+        /// <returns>The string representation of the data, empty if read was not successful.</returns>
+        public string ReadVariableString(ulong address, Encoding encoding, uint maxLength = 32)
         {
             if (!ReadBytesCached(address, maxLength))
                 return "";
@@ -648,10 +778,10 @@ namespace memflowNET
             {
                 // find terminator
                 if (*(p) == (byte)0x00)
-                    return Encoding.ASCII.GetString(this._rwBuffer, i);
+                    return encoding.GetString(this._rwBuffer, i);
                 //return new string((sbyte*)this._rwBuffer); // DANGER! this will create a buffer-overflow if no null-terminator is present
             }
-            return Encoding.ASCII.GetString(this._rwBuffer, (int)maxLength);
+            return encoding.GetString(this._rwBuffer, (int)maxLength);
         }
 
         /// <summary>
@@ -865,7 +995,7 @@ namespace memflowNET
         /// </summary>
         /// <param name="address">The virtual address to write to.</param>
         /// <param name="data">The string to write.</param>
-        /// <param name="encoding">The encoding tu use when writing.</param>
+        /// <param name="encoding">The encoding to use when writing.</param>
         /// <returns>True if writing was successful.</returns>
         public bool WriteString(ulong address, string data, Encoding encoding)
         {
