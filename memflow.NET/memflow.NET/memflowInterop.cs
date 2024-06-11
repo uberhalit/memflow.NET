@@ -889,7 +889,7 @@ namespace memflowNET.Interop
     /// Process information structure
     /// This structure implements basic process information. Architectures are provided both of thesystem, and of the process.
     /// </summary>
-    [StructLayout(LayoutKind.Explicit, Size = 72)]
+    [StructLayout(LayoutKind.Explicit, Size = 96)]
     public unsafe partial struct ProcessInfo
     {
         [FieldOffset(0)]
@@ -920,15 +920,15 @@ namespace memflowNET.Interop
         [NativeTypeName("struct ArchitectureIdent")]
         public ArchitectureIdent sys_arch;
 
-        [FieldOffset(52)]
+        [FieldOffset(64)]
         [NativeTypeName("struct ArchitectureIdent")]
         public ArchitectureIdent proc_arch;
 		
-		[FieldOffset(56)]
+		[FieldOffset(80)]
         [NativeTypeName("Address")]
         public ulong dtb1;
 		
-		[FieldOffset(64)]
+		[FieldOffset(88)]
         [NativeTypeName("Address")]
         public ulong dtb2;
     }
